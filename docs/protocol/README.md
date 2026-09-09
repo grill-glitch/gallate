@@ -1,5 +1,10 @@
 # GCWP — Gamelate CLI–Wrapper Protocol
 
+> ⚠️ **DRAFT — breaking changes possible.**
+> Field names, schema shapes, and protocol behavior MAY change
+> without notice until the 1.0 release. Pin to a commit hash, not
+> a version, when depending on this specification.
+
 This directory contains the formal specification of **GCWP**, the
 process-level communication contract between a generic Wrapper and any
 number of engine-specific CLI tools.

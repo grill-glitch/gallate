@@ -1,9 +1,84 @@
 # gallate
 
+<p align="center">
+  <img src="./docs/assets/gallate-logo.png" alt="gallate logo" width="640">
+</p>
+
 **Gallate** — A neutral specification set for CLI ↔ Wrapper communication in game localization workflows.
 
-> ⚠️ This is the **specification repository**, not a runnable implementation.
-> Implementations (Wrapper / CLI / OmegaT plugin) live in separate repositories.
+> ⚠️ **DRAFT — breaking changes possible.**
+> The specification is in active drafting. Field names, schema
+> shapes, and protocol behavior MAY change without notice until the
+> 1.0 release. Pin to a commit hash, not a version, when depending
+> on this repository.
+
+---
+
+## Philosophy
+
+> **One generic Wrapper bridges OmegaT to countless independent CLIs;
+> standardize the protocol, not the implementation.**
+
+`gallate` is not "yet another translation tool." It is the
+**protocol layer** that lets a single OmegaT integration talk to
+any number of independent engine-specific CLIs — without OmegaT,
+the Wrapper, or the CLIs ever needing to know about each other.
+
+```text
+                OmegaT
+                  │
+                  │  (one Wrapper API)
+                  ▼
+                Wrapper
+                  │
+                  │  GCWP
+       ┌──────────┼──────────┐
+       ▼          ▼          ▼
+    CLI #1     CLI #2     CLI #N
+    Artemis    Ren'Py     Unity ...
+       │          │          │
+    Engine     Engine     Engine
+```
+
+### Why this matters
+
+1. **Highly decoupled.** OmegaT, the Wrapper, every CLI, and every
+   game engine evolve independently. Replacing one layer never
+   requires rewriting the others.
+2. **Real Unix philosophy.** Each CLI is a focused, independent tool.
+   It can run alone, from a shell, from a CI pipeline, from a GUI,
+   or from OmegaT — same binary, same flags.
+3. **Unbounded extensibility.** One Wrapper, *N* CLIs, with no upper
+   limit:
+
+   ```text
+   Wrapper
+   ├── CLI A
+   ├── CLI B
+   ├── CLI C
+   └── ...
+   ```
+
+   Adding a 100th engine requires no Wrapper changes — only a new
+   CLI that speaks GCWP.
+4. **Protocol over language.** A CLI does not have to be Rust, Go,
+   or Python. As long as it follows GCWP, it joins the ecosystem.
+5. **Deployment handled by the Wrapper.** The Wrapper discovers,
+   downloads, validates, and updates CLIs. Users never wrestle with
+   per-engine runtimes.
+6. **OmegaT is one consumer.** Wrapper does not bind translation
+   logic to OmegaT; CLIs do not depend on OmegaT. Any future GUI,
+   CLI, or automation pipeline can drive the same CLIs.
+7. **Ecosystems evolve independently.** CLIs ship on their own
+   cadence, the Wrapper ships on its own, OmegaT ships on its own —
+   no co-release pressure.
+8. **Capability discovery is the contract.** `manifest`, `features`,
+   `status`, `statistics` — the Wrapper asks the CLI what it can do
+   rather than assuming.
+
+The result is a system where the **core is a small, stable protocol**
+that lets many specialized tools compose freely — not a "big, beautiful
+translation software" that everyone has to fork.
 
 ---
 
@@ -14,42 +89,21 @@
 | Contract | Layer | Audience |
 | --- | --- | --- |
 | **GCWP** (Gamelate CLI–Wrapper Protocol) | Process / IPC layer | Wrapper & CLI implementers |
-| **gallate.yaml** specification | Shell / project-config layer | CLI authors & end users |
+| **`gallate.yaml`** specification | Shell / project-config layer | CLI authors & end users |
 
-The **GCWP** is the focus of this repository. It governs how a generic
-**Wrapper** (the only OmegaT integration point) talks to many independent
-**CLI** tools, each targeting one specific game engine, engine family, or
-resource format.
+The **GCWP** sits under [`docs/protocol/`](./docs/protocol/). The
+**Shell-layer specification** sits under
+[`docs/shell-layer/`](./docs/shell-layer/) and covers the CLI grammar,
+project layout, and the `gallate.yaml` schema. Together they cover
+everything OmegaT / the Wrapper / / any CLI implementation needs.
 
-```text
-                OmegaT
-                  │
-                  │ Wrapper API
-                  ▼
-                Wrapper
-                  │
-                  │ GCWP
-       ┌──────────┼──────────┐
-       ▼          ▼          ▼
-    CLI #1     CLI #2     CLI #N
-    Artemis    Ren'Py     Unity ...
-```
+> **The Wrapper is the only OmegaT integration point. CLI count is
+> unbounded.** Adding a 100th engine requires no change to OmegaT or
+> the Wrapper — only a new CLI that speaks GCWP.
 
-> **OmegaT integrates only the Wrapper. CLI count is unbounded.**
-> Adding a 100th engine requires no change to OmegaT or the Wrapper —
-> only a new CLI that speaks GCWP.
-
-The complementary **`gallate.yaml`** specification (CLI shell-level behavior
-contract, project init, media model, script model, exit codes, …) is
-documented in two places that together form one contract:
-
-- This repository's [Shell-layer specification](./docs/shell-layer/)
-  defines the project layout, CLI grammar, and the complete
-  `gallate.yaml` schema.
-- The historical reference
-  [`Documents/通用行为规范.txt`](https://github.com/grill-glitch/Documents)
-  carries the prose narrative from which the Shell-layer spec was
-  extracted.
+The historical narrative reference for the Shell-layer rules lives
+at [`Documents/通用行为规范.txt`](https://github.com/grill-glitch/Documents);
+it is the prose from which the Shell-layer spec was extracted.
 
 ---
 
@@ -63,6 +117,9 @@ gallate/
 ├── CHANGELOG.md               # placeholder (no entries during Draft)
 │
 ├── docs/
+│   ├── assets/
+│   │   └── gallate-logo.png    # project logo (README hero)
+│   │
 │   ├── protocol/                # GCWP — Wrapper ↔ CLI process layer
 │   │   ├── README.md              # protocol index
 │   │   ├── 00-glossary.md

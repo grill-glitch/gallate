@@ -1,5 +1,10 @@
 # Shell Layer Specification
 
+> ⚠️ **DRAFT — breaking changes possible.**
+> Field names, schema shapes, and grammar MAY change without notice
+> until the 1.0 release. Pin to a commit hash, not a version, when
+> depending on this specification.
+
 This directory defines the **Shell / Project-Config Layer** of the
 gallate specification set. It covers everything that lives between the
 user's shell and a gallate CLI process:

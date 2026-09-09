@@ -1,44 +1,96 @@
 # gallate(中文版)
 
+<p align="center">
+  <img src="./docs/assets/gallate-logo.png" alt="gallate logo" width="640">
+</p>
+
 **Gallate** —— 游戏本地化工作流中 CLI 与 Wrapper 通信的中立规范集合。
 
-> ⚠️ 本仓库是 **规范仓库**,不是可运行的实现。
-> 各种实现(Wrapper / CLI / OmegaT 插件)分布在各自独立的仓库。
+> ⚠️ **草稿状态 — 可能出现破坏性变更。**
+> 规范仍在活跃起草中。在 1.0 发布之前,字段名、schema 形状与协议行为
+> **随时可能变更**,不再另行通知。依赖本仓库时请 pin 到 commit hash,
+> 而非版本号。
+
+---
+
+## 项目哲学
+
+> **一个通用 Wrapper,连接 OmegaT 与无数独立 CLI;标准化协议,而不是标准化实现。**
+
+`gallate` 不是"又一个翻译工具"。它是**协议层** —— 让一个 OmegaT 集成点
+能与任意数量的、面向具体引擎的独立 CLI 对话,而 OmegaT、Wrapper、CLI
+彼此都不需要知道对方的存在。
+
+```text
+                OmegaT
+                  │
+                  │  (一个 Wrapper API)
+                  ▼
+                Wrapper
+                  │
+                  │  GCWP
+       ┌──────────┼──────────┐
+       ▼          ▼          ▼
+    CLI #1     CLI #2     CLI #N
+    Artemis    Ren'Py     Unity ...
+       │          │          │
+    Engine     Engine     Engine
+```
+
+### 为什么重要
+
+1. **高度解耦。** OmegaT、Wrapper、每个 CLI、每个游戏引擎各自独立演进。
+   替换任何一层都无需重写其他层。
+2. **真正的 Unix 哲学。** 每个 CLI 都是独立、聚焦的工具。能脱离 OmegaT
+   单独运行,也能从 shell、CI、GUI 调用 —— 同一份二进制,同一套 flag。
+3. **无限扩展能力。** 一个 Wrapper,*N* 个 CLI,数量无上限:
+
+   ```text
+   Wrapper
+   ├── CLI A
+   ├── CLI B
+   ├── CLI C
+   └── ...
+   ```
+
+   增加第 100 个引擎,Wrapper 不需要改 —— 只要新 CLI 遵循 GCWP。
+4. **协议优先,而不是语言优先。** CLI 不必是 Rust、Go 或 Python。
+   遵循 GCWP 即可加入生态。
+5. **Wrapper 负责部署。** Wrapper 发现、下载、验证、更新 CLI。
+   用户无需手动配置各引擎的运行时。
+6. **OmegaT 只是一个消费者。** Wrapper 不把翻译逻辑绑死在 OmegaT;
+   CLI 不依赖 OmegaT。任何未来的 GUI、CLI 或自动化流水线
+   都可以驱动同样的 CLI。
+7. **生态可独立演进。** CLI 按自己节奏发版,Wrapper 独立更新,OmegaT 独立升级
+   —— 没有 co-release 压力。
+8. **能力动态发现。** `manifest`、`features`、`status`、`statistics` —
+   Wrapper 询问 CLI 能做什么,而不是假设。
+
+最终是一个**小而稳定的协议**核心,让许多专业工具自由组合 —— 而
+不是"大而美的翻译软件",让所有人都去 fork。
 
 ---
 
 ## 什么是 gallate?
 
-`gallate`(原名 `gamelate`)定义了两份契约:
+`gallate`(原名 `gamelate`)定义两份契约:
 
 | 契约 | 层级 | 受众 |
 | --- | --- | --- |
 | **GCWP**(Gamelate CLI–Wrapper Protocol) | 进程 / IPC 层 | Wrapper 与 CLI 实现者 |
-| **gallate.yaml** 规范 | Shell / 项目配置层 | CLI 作者与终端用户 |
+| **`gallate.yaml`** 规范 | Shell / 项目配置层 | CLI 作者与终端用户 |
 
-本仓库核心是 **GCWP**,规定通用 **Wrapper**(OmegaT 的唯一集成点)如何与大量独立 **CLI** 工具通信,每个 CLI 面向一个具体游戏引擎、引擎家族或资源格式。
+**GCWP** 位于 [`docs/protocol/`](./docs/protocol/)。**Shell 层规范**
+位于 [`docs/shell-layer/`](./docs/shell-layer/),覆盖 CLI 语法、项目
+布局与 `gallate.yaml` schema。二者合在一起,涵盖 OmegaT、Wrapper
+与任何 CLI 实现所需的一切。
 
-```text
-                OmegaT
-                  │
-                  │ Wrapper API
-                  ▼
-                Wrapper
-                  │
-                  │ GCWP
-       ┌──────────┼──────────┐
-       ▼          ▼          ▼
-    CLI #1     CLI #2     CLI #N
-    Artemis    Ren'Py     Unity ...
-```
-
-> **OmegaT 只集成 Wrapper。CLI 数量不受限制。**
+> **Wrapper 是 OmegaT 的唯一集成点。CLI 数量不受限制。**
 > 增加第 100 个引擎,OmegaT 与 Wrapper 都不需修改 —— 只需新增一个遵守 GCWP 的 CLI。
 
-配套的 **`gallate.yaml`** 规范(CLI Shell 层行为契约、项目初始化、媒体模型、脚本模型、退出码等)在两处共同定义:
-
-- 本仓库的 [Shell 层规范](./docs/shell-layer/) 定义项目布局、CLI 语法、`gallate.yaml` 完整 schema。
-- 历史参考 [`Documents/通用行为规范.txt`](https://github.com/grill-glitch/Documents) 保留由其提炼出的散文式叙述。
+Shell 层规则的历史叙述参考在
+[`Documents/通用行为规范.txt`](https://github.com/grill-glitch/Documents),
+是其被提炼为 Shell 层规范的散文来源。
 
 ---
 
@@ -52,6 +104,9 @@ gallate/
 ├── CHANGELOG.md               # 占位文件(草稿期间无条目)
 │
 ├── docs/
+│   ├── assets/
+│   │   └── gallate-logo.png    # 项目 logo (README hero)
+│   │
 │   ├── protocol/                # GCWP — Wrapper ↔ CLI 进程层
 │   │   ├── README.md              # 协议目录
 │   │   ├── 00-glossary.md

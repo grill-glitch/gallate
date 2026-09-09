@@ -1,5 +1,11 @@
 # Changelog
 
+> ⚠️ **DRAFT — breaking changes possible.**
+> The gallate specification is in active drafting. Field names,
+> schema shapes, and protocol behavior MAY change without notice
+> until the 1.0 release. Pin to a commit hash, not a version,
+> when depending on this specification.
+
 The gallate specification is in active drafting. While the
 specification is Draft, the repository has **no published version
 number** — there are no entries here.
