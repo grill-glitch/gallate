@@ -137,10 +137,10 @@ runtime:
 | operations | `build` | bool | 引擎构建 |
 | operations | `unpack` | bool | 引擎归档解包 |
 | operations | `repack` | bool | 引擎归档打包 |
-| resources | `text` | bool | 文本媒体 |
-| resources | `image` | bool | 图片媒体 |
-| resources | `audio` | bool | 音频媒体 |
-| resources | `video` | bool | 视频媒体 |
+| resources | `text` | bool | **标准**文本媒体(baseline) |
+| resources | `image` | bool | **标准**图片媒体(baseline) |
+| resources | `audio` | bool | 引擎扩展媒体,仅在引擎支持时出现 |
+| resources | `video` | bool | 引擎扩展媒体,仅在引擎支持时出现 |
 | validation | `syntax` | bool | 通用语法检查(引擎定义) |
 | validation | `regex` | bool | 正则规则 |
 | validation | `placeholder` | bool | 占位符保留 |
@@ -149,6 +149,11 @@ runtime:
 | runtime | `status` | bool | 状态查询 |
 | runtime | `statistics` | bool | 统计输出 |
 | runtime | `cancellation` | bool | 取消支持 |
+
+> **标准 vs 扩展媒体**:Wrapper 可把 `text` 和 `image` 当作 baseline(每个
+> gallate CLI 都声明,至少 `text: true`)。`audio` / `video` 与其他键
+> (例如 `font`)都是引擎扩展,**不得**假设一定存在。Shell 层关于标准
+> vs 扩展媒体的定义在 [docs/shell-layer/04-media.md](../../shell-layer/04-media.md)。
 
 ### 否定式真理
 

@@ -149,10 +149,10 @@ each dimension.
 | operations | `build` | bool | Engine build |
 | operations | `unpack` | bool | Engine archive unpack |
 | operations | `repack` | bool | Engine archive repack |
-| resources | `text` | bool | Text media |
-| resources | `image` | bool | Image media |
-| resources | `audio` | bool | Audio media |
-| resources | `video` | bool | Video media |
+| resources | `text` | bool | **Standard** text media (baseline) |
+| resources | `image` | bool | **Standard** image media (baseline) |
+| resources | `audio` | bool | Engine-extension media — only present when supported |
+| resources | `video` | bool | Engine-extension media — only present when supported |
 | validation | `syntax` | bool | Generic syntax check (engine-defined) |
 | validation | `regex` | bool | Regex rules |
 | validation | `placeholder` | bool | Placeholder preservation |
@@ -161,6 +161,13 @@ each dimension.
 | runtime | `status` | bool | Status query |
 | runtime | `statistics` | bool | Statistics emission |
 | runtime | `cancellation` | bool | Cancellation support |
+
+> **Media baseline vs extension**: A Wrapper MAY assume `text` and
+> `image` are baseline (every gallate CLI declares them, with at least
+> `text: true`). `audio`, `video`, and any other keys (e.g. `font`)
+> are engine-extension and MUST NOT be assumed present. The full
+> Shell-layer definition of standard vs extension media is in
+> [docs/shell-layer/04-media.md](../../shell-layer/04-media.md).
 
 ### Negative truth
 

@@ -1,0 +1,83 @@
+# Full gallate project
+#
+# A complete reference configuration that demonstrates every
+# standard top-level key plus engine-extension options.
+#
+# Use this as the starting template for production projects.
+# The exact engine options depend on your CLI; see
+# `engine-options.md` in this directory.
+
+# ── Input ───────────────────────────────────────────────────────
+input: ./game.pfs
+
+# ── Output ──────────────────────────────────────────────────────
+output: ./game-zh.pfs
+
+# ── Default media ────────────────────────────────────────────────
+# Standard baseline. `audio` and `video` would appear here too if
+# your CLI exposes them and you want them in the default media set.
+media:
+  - text
+  - image
+
+# ── Default ignore ──────────────────────────────────────────────
+ignore:
+  - "*.tmp"
+  - "cache/"
+  - "debug.log"
+
+# ── Pre / Post scripts ──────────────────────────────────────────
+scripts:
+  pre:
+    - ./scripts/unpack.py
+  post:
+    - ./scripts/repack.py
+
+# ── Engine options ──────────────────────────────────────────────
+# These keys are engine-specific. The standard CLI passes them
+# through verbatim. The engine wrapper interprets them.
+engine:
+
+  # Plain engine option (top-level key under engine:)
+  text_encoding: utf-8
+  rebuild_index: true
+
+  # Sub-Media configuration under standard text media
+  text:
+    includes:
+      - dialog
+      - menu
+      - hardcoded
+    excludes:
+      - debug_log
+
+  # Sub-Media configuration under standard image media
+  image:
+    includes:
+      - background
+      - portrait
+      - portrait_diff
+      - ui
+    excludes:
+      - ui           # project has stabilized, no UI changes expected
+
+  # Sub-Media configuration under extension media (audio)
+  # Valid only when this CLI exposes `audio`.
+  audio:
+    includes:
+      - voice
+      - bgm
+    excludes:
+      - sfx          # skip sound effects in this project
+
+  # Sub-Media configuration under extension media (video)
+  video:
+    includes:
+      - cutscene
+      - opening
+
+  # Extension media (font) with sub-media of its own
+  font:
+    includes:
+      - ascii
+      - cjk

@@ -1,0 +1,16 @@
+# Placeholder directory marker for the standard `image/` directory.
+#
+# gallate's `init` MAY create standard directories (text/, image/)
+# as empty placeholders. They are populated when the CLI actually
+# extracts or injects.
+
+# An init command that creates this layout:
+#
+#   tool init ./my-game \
+#     --input ./game.pfs \
+#     --output ./game-zh.pfs \
+#     --media text,image
+#
+# Note: NO audio/ video/ font/ scripts/ — those are
+# engine-extension. They would only appear if the user (or engine)
+# creates them.

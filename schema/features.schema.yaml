@@ -37,18 +37,37 @@ properties:
 
   resources:
     type: object
-    description: Media support flags.
+    description: |
+      Media support flags. Two media are part of the standard
+      baseline that every gallate CLI MUST be able to declare:
+      `text` and `image`. `audio` and `video` are engine-extension
+      media — a Wrapper MAY assume `text` and `image` are baseline
+      and MUST NOT assume `audio` / `video` are present. Additional
+      keys are allowed for engine-specific media (e.g. `font`,
+      `bgm`, `cutscene`); see docs/shell-layer/04-media.md.
     additionalProperties:
       type: boolean
     properties:
       text:
         type: boolean
+        description: |
+          Standard media. Every gallate CLI SHOULD be able to
+          support text; a no-text CLI is invalid.
       image:
         type: boolean
+        description: |
+          Standard media. Engines MAY decline to support it
+          (e.g. ASCII adventure).
       audio:
         type: boolean
+        description: |
+          Engine-extension media. Only present when the engine
+          supports audio resources.
       video:
         type: boolean
+        description: |
+          Engine-extension media. Only present when the engine
+          supports video resources.
 
   validation:
     type: object
