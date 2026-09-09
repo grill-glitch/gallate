@@ -4,6 +4,8 @@
   <img src="./docs/assets/gallate-logo.png" alt="gallate logo" width="640">
 </p>
 
+**[English](./README.md) | [简体中文](./README.zh-CN.md)**
+
 **Gallate** —— 游戏本地化工作流中 CLI 与 Wrapper 通信的中立规范集合。
 
 > ⚠️ **草稿状态 — 可能出现破坏性变更。**

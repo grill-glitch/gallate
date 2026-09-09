@@ -1,5 +1,7 @@
 # Shell Layer Specification
 
+**[English](./README.md) | [简体中文](./zh-CN/README.md)**
+
 > ⚠️ **DRAFT — breaking changes possible.**
 > Field names, schema shapes, and grammar MAY change without notice
 > until the 1.0 release. Pin to a commit hash, not a version, when
