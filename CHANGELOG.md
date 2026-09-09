@@ -128,14 +128,48 @@ Key rules:
 - A Wrapper / OmegaT MUST round-trip between XLIFF and JSON
     without loss. Round-trip with PO loses `snippet`.
 - The CLI MUST NOT pick a lossy format (`po`) when the user
-    requested lossless (`xliff` / `json`).
+    requested a lossless one (`xliff` / `json`).
+
+### `text.lifecycle` (when metadata is written / read) and `text.meta` (pure mapping declarations)
+
+Two new top-level keys under `text:`:
+
+- `lifecycle.written_on: extract` — the CLI writes the four
+  metadata fields only at extract time, and preserves them verbatim
+  through any number of extract → inject cycles. The source code
+  is not re-read at inject time. Default; can be set to `never` to
+  suppress metadata entirely.
+- `lifecycle.read_on: [post-extract, pre-inject]` — the phases
+  when Wrapper / OmegaT should surface the metadata. `post-extract`
+  shows it to the translator; `pre-inject` shows it to QA. The
+  `build` phase MUST NOT read `source-context` (the engine already
+  knows the code; the captured snippet is for human consumption).
+- `meta:` — purely declarative. Maps each metadata field to the
+  output key it lands in (`trans-unit-attribute`,
+  `context-group`, `context.linenumber`, etc.). MUST NOT add,
+  rename, or remove fields; the data shape is fixed by this spec.
+
+The `meta:` block was added per user request to make mappings
+explicit when an engine uses non-default output keys. The data
+shape itself stays normative; only the keys are mapped.
 
 Affected files:
 
 - `docs/shell-layer/05-config-file.md` and its Chinese translation
+    — `lifecycle:` and `meta:` blocks added under `text:`; both EN
+    and ZH `§5.2 Complete example` and `§5.8 text` block updated
+    with the new fields.
+- `shell-layer-examples/full-project/gallate.yaml` and
+    `shell-layer-examples/minimal-project/gallate.yaml` — example
+    files show `lifecycle:` and `meta:`.
+
+Affected files (combined with the four-field model section):
+
+- `docs/shell-layer/05-config-file.md` and its Chinese translation
     — `metadata.location` / `metadata.source_context` field
     descriptions sharpened; full `source-context` subsection
-    rewritten with the normative model.
+    rewritten with the normative model and the `lifecycle` /
+    `meta` additions.
 - No schema change (the data model lives at the Shell layer,
     not at the IPC layer).
 ### Engine recognition: `manifest.targets` + `cli identify`

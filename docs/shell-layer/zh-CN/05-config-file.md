@@ -89,6 +89,16 @@ text:
       - .lua
       - .rpy
       - .ks
+  lifecycle:
+    written_on: extract
+    read_on:
+      - post-extract
+      - pre-inject
+  meta:
+    original_file:  trans-unit-attribute
+    source_context: context-group
+    location:       context.linenumber
+    engine_path:    trans-unit-attribute
 ```
 
 ## 5.3 `input`
@@ -189,11 +199,13 @@ text:
   layout: flat             # flat | mirror | single (见 12-file-structure.md)
   sub_media_dirs: false    # 对 text 无意义(text 的 sub-media 在文件内)
 
-  # 每个翻译单元必须携带的元数据字段。
+  # 是否在翻译单元上输出每个元数据字段。
+  # 默认全为 true。数据形状本身由本规范固定;
+  # 这些 flag 只控制是否输出。
   metadata:
     original_file: true        # 源路径(游戏归档内)
-    source_context: true       # 源代码上下文(对 hardcoded 字符串)
-    location: true             # line / offset / length(若引擎知道)
+    source_context: true       # text.hardcoded 的四字段记录
+    location: true             # line / offset / length(非 hardcoded 单元)
     engine_path: true          # 引擎内部逻辑路径
 
   # hardcoded 字符串的源代码上下文捕获。
@@ -206,6 +218,20 @@ text:
       - .js
       - .rpy
       - .ks
+
+  # 各元数据字段的写入与读取时机。
+  # 默认匹配标准工作流;两个字段都可选。
+  # 整块 OPTIONAL —— 不写时,行为匹配下面的默认值。
+  lifecycle:
+    written_on: extract     # extract | never
+                            #   extract (默认):CLI 在 extract 时写入元数据,
+                            #     inject 时原样保留。源代码在 extract
+                            #     与 inject 之间不会变,CLI 没有重捕的理由。
+                            #   never:从不写元数据(覆盖所有 metadata.* flag)。
+    read_on:                 # Wrapper / OmegaT 何时读
+      - post-extract         #   extract 后立刻:给译者看
+      - pre-inject           #   inject 前:QA 审
+                             #   build 阶段 MUST NOT 读 source-context。
 ```
 
 #### 字段
@@ -221,10 +247,34 @@ text:
 | `hardcoded.context_lines` | int | `text.hardcoded` 单元捕获周边代码行数。默认 `3`。 |
 | `hardcoded.max_bytes` | int | 每单元捕获的 payload 上限。默认 `4096`。 |
 | `hardcoded.engine_extensions` | list | 引擎视作代码的文件扩展名。空列表 = 引擎自决。 |
+| `lifecycle.written_on` | enum | `extract`(默认)或 `never`。CLI 仅在 extract 时写入元数据,inject 时保留。build 阶段从不写元数据。 |
+| `lifecycle.read_on` | list | Wrapper / OmegaT 应展示元数据的阶段。默认:`post-extract` 与 `pre-inject`。**build 阶段 MUST NOT 读 source-context**。 |
+
+#### `meta:`(可选映射)
+
+```yaml
+text:
+  meta:
+    # 可选:声明每个元数据字段落到输出格式的哪个键。
+    # 没有这个块时,使用规范的默认映射。
+    # 这块**纯声明** —— 它不改变数据形状,只声明输出键。
+    original_file:  trans-unit-attribute      # XLIFF <trans-unit> 属性
+    source_context: context-group            # XLIFF <context-group> 名
+    location:       context.linenumber        # 在 context-group 内
+    engine_path:    trans-unit-attribute      # 或自定义命名空间
+```
+
+`meta:` 块**纯声明** —— 它告诉 CLI 规范规定的数据形状使用哪些输出键。
+它**不得**增加、重命名、删除字段。数据形状(source-context 的
+`file` / `line` / `end_line` / `snippet`)由本规范固定,不可协商。
+
+引擎可为自己的扩展媒体定义 `meta:` 块。键名引擎定;约束同上
+(不改变形状,只映射键)。
 
 #### `original-file`
 
-`original-file` 字段让译者知道翻译单元来自游戏归档的哪个文件。没有它,QA 无法把丢失的翻译溯源到原始位置。
+`original-file` 字段让译者知道翻译单元来自游戏归档的哪个文件。
+没有它,QA 无法把丢失的翻译溯源到原始位置。
 
 XLIFF 单元示例:
 
@@ -237,11 +287,32 @@ XLIFF 单元示例:
 
 CLI **必须**在能拿到值时发出 `original-file`。当 `metadata.original_file` 为 `false` 时,CLI 可以省略,但 Wrapper / OmegaT 应把缺席视为"未知来源"。
 
+`original-file` 在 **extract** 时写入(此时读源代码),在 inject 时
+**原样保留**(源代码未变,CLI 不重读)。
+
 #### `source-context`(对 hardcoded sub-media)
 
 > ⚠ **规范性数据模型。** CLI **必须**把每个 `text.hardcoded` 单元的源代码
 > 上下文捕获为一个固定数据模型。选择的输出格式(XLIFF / PO / JSON)只是
 > 一种序列化 —— Wrapper / OmegaT 按同一组字段读取,与格式无关。
+
+**source-context 何时写?**
+
+源代码只在 **extract** 时读。CLI 在那里捕获四字段记录并嵌入翻译
+单元。**inject** 时,CLI 读翻译文本;它**不重捕源代码**(源代码没变)。
+捕获的 source-context **必须**在任意次 extract → inject 循环中原样保留。
+
+**source-context 何时读?**
+
+Wrapper / OmegaT 应在 extract 后(`post-extract`)向译者展示
+source-context,并在 inject 前(`pre-inject`)向 QA 展示。**build** 阶段
+**不得**读 source-context —— 引擎已经知道代码,捕获的 snippet 只
+供人读。
+
+这些阶段由 `lifecycle.read_on`(见上)控制。默认覆盖两个预期消费者;
+build 阶段被故意排除。
+
+**数据模型**
 
 CLI 提取 `text.hardcoded` 字符串(嵌入脚本或二进制资源的字符串)时,
 把源代码上下文捕获为一个**四字段记录**:
@@ -361,6 +432,9 @@ CLI **必须**用这些哨兵值发出四字段记录,而**不得**省略 `conte
 #### `location`
 
 CLI 已知的位置信息(XLIFF 写为 `<context context-type="linenumber">`;PO 写为 `file:line`)。未知时省略。
+
+`location` 在 **extract** 时写入(此时读源代码)。
+inject 时保留。
 
 #### `engine_path`
 

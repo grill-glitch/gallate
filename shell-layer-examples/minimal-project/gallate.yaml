@@ -27,6 +27,24 @@ text:
     source_context: true
     location: true
     engine_path: true
+  hardcoded:
+    context_lines: 3
+    max_bytes: 4096
+    engine_extensions:
+      - .py
+      - .lua
+      - .rpy
+      - .ks
+  lifecycle:
+    written_on: extract
+    read_on:
+      - post-extract
+      - pre-inject
+  meta:
+    original_file:  trans-unit-attribute
+    source_context: context-group
+    location:       context.linenumber
+    engine_path:    trans-unit-attribute
 
 image:
   layout: sub_media_dirs

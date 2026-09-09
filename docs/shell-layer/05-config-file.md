@@ -82,6 +82,16 @@ text:
       - .lua
       - .rpy
       - .ks
+  lifecycle:
+    written_on: extract
+    read_on:
+      - post-extract
+      - pre-inject
+  meta:
+    original_file:  trans-unit-attribute
+    source_context: context-group
+    location:       context.linenumber
+    engine_path:    trans-unit-attribute
 
 engine:
   text_encoding: utf-8
@@ -223,11 +233,13 @@ text:
   layout: flat             # flat | mirror | single (see 12-file-structure.md)
   sub_media_dirs: false    # ignored (sub-media live inside files for text)
 
-  # Metadata fields every translation unit MUST carry.
+  # Whether to emit each metadata field on a translation unit.
+  # All default to true. The data shape itself is fixed by this
+  # spec; these flags only turn emission on or off.
   metadata:
     original_file: true        # source path inside the game archive
-    source_context: true       # surrounding code/snippet (for hardcoded)
-    location: true             # line / offset / length when known
+    source_context: true       # four-field record for text.hardcoded
+    location: true             # line / offset / length (non-hardcoded units)
     engine_path: true          # engine-internal logical path
 
   # Source-context capture for hardcoded strings.
@@ -240,6 +252,24 @@ text:
       - .js
       - .rpy
       - .ks
+
+  # When each metadata field is written and read.
+  # Defaults match the standard workflow; both fields are optional.
+  # The block is OPTIONAL entirely — when omitted, behavior matches
+  # the defaults below.
+  lifecycle:
+    written_on: extract     # extract | never
+                            #   extract (default): CLI writes metadata
+                            #     during extract and preserves it during
+                            #     inject. The source code does not change
+                            #     between extract and inject, so there is
+                            #     no reason for the CLI to re-capture.
+                            #   never: metadata is never written (overrides
+                            #     every metadata.* flag).
+    read_on:                 # when the Wrapper / OmegaT reads it
+      - post-extract         #   right after extract: shown to translator
+      - pre-inject           #   right before inject: QA review
+                             #   The build phase MUST NOT read source-context.
 ```
 
 #### Fields
@@ -255,6 +285,33 @@ text:
 | `hardcoded.context_lines` | int | Lines of surrounding code to capture for `text.hardcoded` units. Default: `3`. |
 | `hardcoded.max_bytes` | int | Upper bound on the captured context payload, per unit. Default: `4096`. |
 | `hardcoded.engine_extensions` | list | File extensions the engine treats as code for context capture. Empty list = engine decides. |
+| `lifecycle.written_on` | enum | `extract` (default) or `never`. The CLI writes the metadata only during extract and preserves it across inject. The build phase never writes metadata. |
+| `lifecycle.read_on` | list | Phases when Wrapper / OmegaT should surface the metadata. Default: `post-extract` and `pre-inject`. The `build` phase MUST NOT read source-context. |
+
+#### `meta:` (optional mappings)
+
+```yaml
+text:
+  meta:
+    # Optional: declare where each metadata field lands in the
+    # output format. Without this block, the spec's defaults apply.
+    # This block is purely a MAPPING declaration — it does NOT
+    # change the data shape, only the output keys.
+    original_file:  trans-unit-attribute      # XLIFF <trans-unit> attribute
+    source_context: context-group            # XLIFF <context-group> name
+    location:       context.linenumber        # inside context-group
+    engine_path:    trans-unit-attribute      # or a custom namespace
+```
+
+The `meta:` block is **purely declarative** — it tells the CLI which
+output keys the spec-mandated data shape uses. It MUST NOT add,
+rename, or remove fields. The data shape (`file` / `line` /
+`end_line` / `snippet` for source-context) is fixed by this spec
+and is not negotiable.
+
+Engines MAY define engine-extension media with their own `meta:`
+block. The keys are engine-defined; the constraint is the same
+(no shape mutation, only key mapping).
 
 #### `original-file`
 
@@ -276,12 +333,39 @@ The CLI MUST emit `original-file` whenever the value is knowable.
 When `metadata.original_file` is `false`, the CLI MAY omit it but
 Wrapper / OmegaT SHOULD treat its absence as "unknown source".
 
+`original-file` is written at **extract** (the source code is read
+then) and **preserved** across inject (the source code has not
+changed; the CLI does not re-read it).
+
 #### `source-context` (for hardcoded sub-media)
 
 > ⚠ **Normative data model.** The CLI MUST capture source context
 > for every `text.hardcoded` unit as a fixed data model. The chosen
 > output format (XLIFF / PO / JSON) is only a serialization — the
 > Wrapper / OmegaT reads the same four fields regardless of format.
+
+**When is source-context written?**
+
+Source code is read only at **extract** time. The CLI captures
+the four-field record there and embeds it in the translation unit.
+At **inject** time, the CLI reads the translation; it does not
+re-capture source code (it is not changing). The captured
+source-context MUST be preserved verbatim through any number of
+extract → inject cycles.
+
+**When is source-context read?**
+
+Wrapper / OmegaT should surface source-context to the translator
+right after extract (`post-extract`), and to QA right before inject
+(`pre-inject`). The **build** phase MUST NOT read source-context
+— the engine already knows the code; the captured snippet is for
+human consumption only.
+
+These phases are controlled by `lifecycle.read_on` (see above).
+The default covers the two intended consumers; the build phase
+is intentionally excluded.
+
+**Data model**
 
 When a CLI extracts `text.hardcoded` strings — strings embedded in
 script files or binary resources — it captures the source context as
@@ -413,6 +497,9 @@ rather than omitting the `context-group` / `context:` object.
 For positional information the CLI knows (XLIFF calls this
 `<context context-type="linenumber">`; PO uses `file:line`). When
 unknown, the field is omitted.
+
+`location` is written at **extract** (source code is read then).
+It is preserved across inject.
 
 #### `engine_path`
 

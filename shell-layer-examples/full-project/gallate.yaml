@@ -52,6 +52,18 @@ text:
       - .lua
       - .rpy
       - .ks
+  # When each metadata field is written and read.
+  lifecycle:
+    written_on: extract          # extract | never
+    read_on:                     # post-extract / pre-inject / build
+      - post-extract
+      - pre-inject
+  # Pure mappings: which output key each metadata field lands in.
+  meta:
+    original_file:  trans-unit-attribute
+    source_context: context-group
+    location:       context.linenumber
+    engine_path:    trans-unit-attribute
 
 image:
   layout: sub_media_dirs
