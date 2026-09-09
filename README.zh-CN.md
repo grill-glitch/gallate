@@ -153,18 +153,18 @@ gallate/
 │   ├── minimal-cli/
 │   │   ├── manifest.yaml
 │   │   ├── features.yaml
-│   │   └── extract.yaml-stream
+│   │   └── extract.jsonl
 │   └── full-cli/
 │       ├── manifest.yaml
 │       ├── features.yaml
 │       ├── validation.yaml
-│       ├── validation-result.yaml-stream
-│       ├── extract.yaml-stream
-│       ├── inject.yaml-stream
-│       ├── build.yaml-stream
-│       ├── cancel.yaml-stream
-│       ├── identify.yaml-stream
-│       └── errors.yaml-stream
+│       ├── validation-result.jsonl
+│       ├── extract.jsonl
+│       ├── inject.jsonl
+│       ├── build.jsonl
+│       ├── cancel.jsonl
+│       ├── identify.jsonl
+│       └── errors.jsonl
 │
 └── shell-layer-examples/        # 项目树示例
     ├── README.md

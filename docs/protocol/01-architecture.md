@@ -19,7 +19,7 @@
 │                 Wrapper                 │
 │   GCWP client · project loader · glue   │
 └────────────────────┬────────────────────┘
-                     │ GCWP (YAML Line Protocol)
+                     │ GCWP (JSON Line Protocol)
                      │  (CLI count is unbounded)
        ┌─────────────┼─────────────┐
        ▼             ▼             ▼
@@ -68,7 +68,7 @@ Owns:
 | --- | --- |
 | CLI discovery | Finding available CLIs (filesystem, registry) |
 | CLI process management | Spawn, monitor, terminate, clean up |
-| Protocol translation | YAML Line Protocol ↔ OmegaT data structures |
+| Protocol translation | JSON Line Protocol ↔ OmegaT data structures |
 | `gallate.yaml` loading | The project config file |
 | Input / Output configuration | Translate to operation request |
 | Event forwarding | Forward CLI events to OmegaT UI |

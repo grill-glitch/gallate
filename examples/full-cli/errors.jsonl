@@ -1,0 +1,13 @@
+{"type":"response","id":"01HOP","operation":"demux","accepted":false,"code":"UNSUPPORTED_OPERATION","reason":"Operation 'demux' is not implemented by this CLI"}
+{"type":"response","id":"01HINPUT","operation":"extract","accepted":true}
+{"type":"event","event":"started","id":"01HINPUT","operation":"extract"}
+{"type":"event","event":"error","code":"FILE_NOT_FOUND","message":"Input file does not exist","path":"./missing.pfs"}
+{"type":"response","id":"01HCORRUPT","operation":"extract","accepted":true}
+{"type":"event","event":"started","id":"01HCORRUPT","operation":"extract"}
+{"type":"event","event":"phase","name":"scanning"}
+{"type":"event","event":"error","code":"ARCHIVE_CORRUPTED","message":"PFS magic header not recognized","path":"./broken.pfs"}
+{"type":"event","event":"error","code":"PROTOCOL_ERROR","message":"Cannot parse request message"}
+{"type":"response","id":"01HCFG","operation":"extract","accepted":false,"code":"INVALID_CONFIG","reason":"Unknown option demo_engine.unknown_option","path":"./game.pfs"}
+{"type":"response","id":"01HNOCANCEL","operation":"build","accepted":false,"code":"UNSUPPORTED_OPERATION","reason":"This CLI does not support cancellation"}
+{"type":"event","event":"validation","rule":"player-name","severity":"error","source":"Hello {player}","target":"你好","message":"Required placeholder is missing: {player}"}
+{"type":"event","event":"completed","id":"01HVALFAIL"}

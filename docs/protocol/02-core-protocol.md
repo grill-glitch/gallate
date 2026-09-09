@@ -21,34 +21,36 @@ stderr  → Human-readable diagnostics (to user / log)
 exit    → Final result (to Wrapper)
 ```
 
-The machine-readable channels (stdin and stdout) use the **YAML Line
-Protocol**: one YAML document per line. Plain text or free-form log
+The machine-readable channels (stdin and stdout) use the **JSON Line
+Protocol**: one JSON object per line. Plain text or free-form log
 output MUST NOT appear on stdout — it MUST go to stderr.
 
 ---
 
-## YAML Line Protocol
+## JSON Line Protocol
 
 Every line on stdin/stdout that carries protocol content MUST be a
-single YAML document. Flow-mapping single-line form is recommended for
-compactness:
+single JSON object — the standard [JSON Lines][jsonl] (NDJSON)
+format. Each line is one complete JSON value; receivers MUST treat
+each line as an independent document:
 
-```yaml
-{type: event, event: started, operation: extract}
-{type: event, event: progress, current: 10, total: 100}
-{type: event, event: progress, current: 50, total: 100}
-{type: event, event: completed}
+```json
+{"type":"event","event":"started","operation":"extract"}
+{"type":"event","event":"progress","current":10,"total":100}
+{"type":"event","event":"progress","current":50,"total":100}
+{"type":"event","event":"completed"}
 ```
 
-Receivers MUST treat each line as an independent document.
+Receivers MUST treat each line as an independent document. The CLI
+MUST NOT emit a JSON value that spans more than one line on stdout.
 
-Multi-line block YAML is allowed when a single line would be unwieldy,
-but the receiver MUST still treat each line as a separate YAML document
-and MUST NOT require cross-line parsing.
+YAML is **not** part of the GCWP wire format. YAML is reserved for
+the **Shell layer** (the human-facing CLI invocation and the
+`gallate.yaml` project file). See
+[00-glossary.md § YAML vs JSON](../00-glossary.md#yaml-vs-json) for
+the rule that splits the two layers.
 
-JSON Lines (NDJSON / JSONL) is **not** part of GCWP. Implementations MAY
-support both for legacy reasons but new fields MUST be specified in
-YAML.
+[jsonl]: https://jsonlines.org/
 
 ---
 

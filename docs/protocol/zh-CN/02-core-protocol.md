@@ -15,11 +15,11 @@ stderr  → 人类可读诊断             (给用户 / 日志)
 exit    → 最终结果                 (Wrapper 读取)
 ```
 
-机器可读通道(stdin / stdout)使用 **YAML Line Protocol**:每行一个 YAML 文档。普通文本或自由日志**不得**出现在 stdout —— 必须走 stderr。
+机器可读通道(stdin / stdout)使用 **JSON Line Protocol**:每行一个 JSON 对象(标准 [JSON Lines][jsonl] / NDJSON 格式)。普通文本或自由日志**不得**出现在 stdout —— 必须走 stderr。
 
-## YAML Line Protocol
+## JSON Line Protocol
 
-stdin / stdout 上每条携带协议内容的行必须是一个独立 YAML 文档。推荐 flow-mapping 单行形式以保持紧凑:
+stdin / stdout 上每条携带协议内容的行必须是一个独立 JSON 对象(标准 [JSON Lines][jsonl] / NDJSON)。接收方必须把每行作为独立文档处理:
 
 ```yaml
 {type: event, event: started, operation: extract}
@@ -30,9 +30,11 @@ stdin / stdout 上每条携带协议内容的行必须是一个独立 YAML 文�
 
 接收方必须把每行视为独立文档。
 
-允许多行 block YAML,但接收方仍必须把每行作为独立 YAML 文档处理,**不得**要求跨行解析。
+CLI **不得**发出跨多行的 JSON 值。
 
-JSON Lines(NDJSON / JSONL)**不属于** GCWP。实现可以出于遗留原因同时支持两者,但新字段必须以 YAML 规定。
+YAML **不**属于 GCWP 线缆格式。YAML 留给 **Shell 层**(人类面对的 CLI 调用与 `gallate.yaml` 项目文件)。见 [00-glossary.md § YAML vs JSON](../00-glossary.md#yaml-vs-json) 中两层分工的规则。
+
+[jsonl]: https://jsonlines.org/
 
 ## 通道
 

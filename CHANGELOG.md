@@ -159,7 +159,7 @@ candidate game file or directory.
 - `docs/protocol/03-discovery.md` adds a full Identify section
   (EN + ZH).
 - `examples/full-cli/manifest.yaml` now carries `targets`.
-- `examples/full-cli/identify.yaml-stream` shows the triaging
+- `examples/full-cli/identify.jsonl` shows the triaging
   flow across three candidate CLIs.
 
 Affected files:
@@ -177,6 +177,56 @@ Affected files:
 - `docs/protocol/00-glossary.md` and its Chinese translation —
   `### Identify` term.
 - `examples/full-cli/manifest.yaml` — sample `targets` block.
-- `examples/full-cli/identify.yaml-stream` — new trace file.
+- `examples/full-cli/identify.jsonl` — new trace file.
 - `examples/README.md` and `README.md` / `README.zh-CN.md` —
   tree index updated.
+
+### Wire format: YAML Line Protocol → JSON Line Protocol
+
+The GCWP wire format (stdin/stdout between Wrapper and CLI) was
+YAML Line Protocol; it is now **JSON Line Protocol** — one JSON
+object per line, the standard [JSON Lines][jsonl] / NDJSON
+format.
+
+[jsonl]: https://jsonlines.org/
+
+The split is now:
+
+- **Wrapper ↔ CLI** (stdin / stdout) — **JSON**. Machine-to-machine.
+- **User ↔ CLI** (Shell layer) — **YAML**. The `--yaml` flag and
+  the `gallate.yaml` project file stay YAML. Human-readable.
+
+Rationale: JSON is the lingua franca of programmatic IPC; YAML
+is better for files humans edit. Conflating the two leads to
+either JSON leaking into user-facing files or YAML on the wire.
+Each layer now uses the format it is best at.
+
+Migration:
+
+- All `*.yaml-stream` trace files renamed to `*.jsonl` and
+  converted line-by-line to compact JSON.
+- `docs/protocol/02-core-protocol.md` § "YAML Line Protocol" renamed
+  to "JSON Line Protocol" with JSON examples.
+- `docs/protocol/00-glossary.md` and its Chinese translation
+  define "JSON Line Protocol" at § L and explain the
+  Wrapper-vs-Shell layer split under § Y.
+- `docs/protocol/06-status.md`'s "Wire-format conflict resolution"
+  section removed; the Status document is now JSONL like every
+  other wire message.
+- `docs/protocol/05-events.md` updated to reference
+  `#json-line-protocol`.
+
+Affected files:
+
+- 8 example files: `examples/{minimal,full}-cli/*.yaml-stream` →
+  `*.jsonl` (git rename + content conversion).
+- `docs/protocol/02-core-protocol.md` and its Chinese translation.
+- `docs/protocol/00-glossary.md` and its Chinese translation.
+- `docs/protocol/05-events.md` and its Chinese translation.
+- `docs/protocol/06-status.md` and its Chinese translation.
+- `docs/protocol/01-architecture.md` and its Chinese translation
+  (architecture-diagram caption).
+- `examples/README.md` (rename of `.jsonl` mention).
+- `README.md` and `README.zh-CN.md` (no body change needed; the
+  repository tree already says `*.jsonl` for traces and
+  `*.schema.yaml` for schema definitions).

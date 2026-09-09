@@ -1,0 +1,15 @@
+{"type":"request","id":"01HIDENT","operation":"identify","input":[{"path":"/storage/games/higurashi/game.pfs"}]}
+{"type":"response","id":"01HIDENT","operation":"identify","accepted":true}
+{"type":"identify","id":"01HIDENT","target":{"path":"/storage/games/higurashi/game.pfs","kind":"file","size":421876},"matched":[{"engine":"artemis","confidence":"high","rule":{"kind":"magic_bytes","matched":"50 46 53 20"},"game":{"name":"Higurashi no Naku Koro ni","engine_versions":["2.0","2.1"]}}]}
+{"type":"request","id":"02HIDENT","operation":"identify","input":[{"path":"/storage/games/higurashi/game.pfs"}]}
+{"type":"response","id":"02HIDENT","operation":"identify","accepted":true}
+{"type":"identify","id":"02HIDENT","target":{"path":"/storage/games/higurashi/game.pfs","kind":"file","size":421876},"matched":[]}
+{"type":"request","id":"03HIDENT","operation":"identify","input":[{"path":"/storage/games/higurashi/game.pfs"}]}
+{"type":"response","id":"03HIDENT","operation":"identify","accepted":true}
+{"type":"identify","id":"03HIDENT","target":{"path":"/storage/games/higurashi/game.pfs"},"matched":[{"engine":"renpy","confidence":"low","rule":{"kind":"path_glob","matched":"**/game.pfs"}}]}
+{"type":"request","id":"04HEXTRACT","operation":"extract","input":[{"path":"/storage/games/higurashi/game.pfs","kind":"file"}],"output":[{"path":"/storage/translations/higurashi","kind":"directory"}]}
+{"type":"response","id":"04HEXTRACT","operation":"extract","accepted":true}
+{"type":"event","event":"started","id":"04HEXTRACT","operation":"extract"}
+{"type":"event","event":"progress","current":50,"total":100}
+{"type":"event","event":"statistics","statistics":{"files":{"processed":318},"text":{"extracted":8421}}}
+{"type":"event","event":"completed","id":"04HEXTRACT","statistics":{"files":{"processed":318},"text":{"extracted":8421}}}

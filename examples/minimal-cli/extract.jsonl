@@ -1,0 +1,3 @@
+{"type":"request","id":"01HXYZAB","operation":"extract","input":[{"path":"./demo.pfs","kind":"file"}],"output":[{"path":"./demo.txt","kind":"file"}]}
+{"type":"response","id":"01HXYZAB","operation":"extract","accepted":true,"protocol":{"version":1.0}}
+{"type":"event","event":"completed","id":"01HXYZAB","statistics":{"files":{"processed":1},"text":{"extracted":12}}}

@@ -3,9 +3,9 @@
 > Status: **Normative**. Defines the live event stream a CLI emits to
 > stdout during an operation.
 
-Events are the Wrapper's primary real-time signal. They MUST be in YAML
-Line Protocol format. See
-[02-core-protocol.md § YAML Line Protocol](./02-core-protocol.md#yaml-line-protocol).
+Events are the Wrapper's primary real-time signal. They MUST be in
+[JSON Line Protocol](./02-core-protocol.md#json-line-protocol) format
+(one JSON object per line on stdout).
 
 ---
 

@@ -80,7 +80,7 @@ Status is **not** an event in the operation stream. It is a
 ```text
 Wrapper                          CLI
    │                              │
-   │  ── status.yaml-stream ───▶  │   (a single line, single document)
+   │  ── status.jsonl ───▶  │   (a single line, one JSON object)
    │                              │   OR alternatively a `cli status --yaml`
    │  ◀── single status doc ───  │   invocation on a dedicated pipe
    │                              │
@@ -114,14 +114,14 @@ This avoids polluting the operation's stdin/stdout with status
 queries. Wrappers MAY prefer this when long-running operations have
 many status polls.
 
-### Wire-format conflict resolution
+### Wire-format
 
-> **The status document is YAML, never JSON, never JSONL.**
-
-The same rule as the rest of GCWP applies (see
-[02-core-protocol.md § YAML Line Protocol](./02-core-protocol.md#yaml-line-protocol)).
-There is no JSON form. If you see `cli status` returning JSON, that is
-a protocol violation by the CLI.
+The status document follows the same wire format as every other
+GCWP message: one JSON object per line on stdout (the standard
+[JSON Line Protocol](./02-core-protocol.md#json-line-protocol)
+format). There is no separate YAML form for status. If you see
+`cli status` returning anything other than JSON Lines, that is a
+protocol violation by the CLI.
 
 ---
 

@@ -171,10 +171,14 @@ No K-terms yet.
 
 ## L
 
-### Line Protocol
+### JSON Line Protocol
 
-The wire format for messages on stdout and stdin: one YAML document per line,
-recommended in flow-mapping single-line form.
+The wire format for messages on stdout and stdin: one JSON object
+per line — the standard [JSON Lines][jsonl] (NDJSON) format.
+YAML is **not** part of the wire. See
+[02-core-protocol.md § JSON Line Protocol](./02-core-protocol.md#json-line-protocol).
+
+[jsonl]: https://jsonlines.org/
 
 ---
 
@@ -371,11 +375,20 @@ operations and XLIFF.
 
 ## Y
 
-### YAML Line Protocol
+### YAML vs JSON
 
-The wire format for GCWP: one YAML document per line, recommended in
-flow-mapping single-line form. See
-[02-core-protocol.md § Communication Model](./02-core-protocol.md#communication-model).
+GCWP deliberately splits the two formats along the layer boundary:
+
+- **Wrapper ↔ CLI** (stdin / stdout) — **JSON**. One JSON object
+  per line. Machine-to-machine, never read by a human.
+- **User ↔ CLI** (Shell layer) — **YAML**. `--yaml` flag and
+  `gallate.yaml` project file. Human-readable.
+
+Rationale: JSON is the lingua franca of programmatic IPC; YAML is
+better for files humans edit. Conflating the two leads to either
+JSON leaking into user-facing files (bad UX) or YAML on the wire
+(machine parsing tax). GCWP picks each format for what it's good
+at.
 
 ---
 

@@ -16,28 +16,34 @@ examples/
 ├── minimal-cli/
 │   ├── manifest.yaml             what the CLI says it is
 │   ├── features.yaml             what the CLI claims it can do
-│   └── extract.yaml-stream       a single extract operation end-to-end
+│   └── extract.jsonl       a single extract operation end-to-end
 └── full-cli/
     ├── manifest.yaml
     ├── features.yaml
     ├── validation.yaml           validation rules the CLI exposes
-    ├── validation-result.yaml-stream  validation findings during an operation
-    ├── extract.yaml-stream       full extract with progress + warnings
-    ├── inject.yaml-stream        full inject with validation findings
-    ├── build.yaml-stream         a complete build run
-    ├── cancel.yaml-stream        cancellation mid-operation
-    ├── identify.yaml-stream      Wrapper triages among candidate CLIs
-    └── errors.yaml-stream        failure scenarios + error codes
+    ├── validation-result.jsonl  validation findings during an operation
+    ├── extract.jsonl       full extract with progress + warnings
+    ├── inject.jsonl        full inject with validation findings
+    ├── build.jsonl         a complete build run
+    ├── cancel.jsonl        cancellation mid-operation
+    ├── identify.jsonl      Wrapper triages among candidate CLIs
+    └── errors.jsonl        failure scenarios + error codes
 ```
 
-The `.yaml-stream` extension is a convention to make streaming traces
-obvious to humans; each line inside is YAML, **not** JSONL. CLI
-implementations SHOULD emit YAML on stdout regardless of filename.
-Use this extension to distinguish "streaming YAML" from "single YAML
-documents" (`.yaml`) and "YAML Schema" definitions (`*.schema.yaml`).
+The `.jsonl` extension marks streaming protocol traces: each
+line is a single JSON object — the standard [JSON Lines][jsonl]
+(NDJSON) format. CLI implementations emit one JSON value per line on
+stdout. Use this extension to distinguish streaming JSONL from
+single YAML documents (`.yaml`) and YAML Schema definitions
+(`*.schema.yaml`).
 
-If you see `.jsonl` anywhere in this repository it is a stale reference
-and should be filed as a bug.
+The `gallate.yaml` project file and the `--yaml` flag on the
+Shell layer stay YAML — they are for humans, not for IPC.
+
+[jsonl]: https://jsonlines.org/
+
+If you see `.yaml-stream` anywhere in this repository it is a
+stale reference and should be filed as a bug.
 
 ---
 

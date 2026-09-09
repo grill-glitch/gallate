@@ -108,9 +108,13 @@ Wrapper 给每次操作请求分配的 ULID/UUID,用于关联事件、状态快�
 
 ## L
 
-### Line Protocol
+### JSON Line Protocol
 
-stdout / stdin 上的线缆格式:每行一个 YAML 文档,推荐 flow-mapping 单行形式。
+GCWP 线缆格式:每行一个 JSON 对象(标准 [JSON Lines][jsonl] / NDJSON 格式)。
+YAML **不**属于 GCWP 线缆,YAML 留给 Shell 层(人类面对的 CLI 调用与
+`gallate.yaml` 项目文件)。
+
+[jsonl]: https://jsonlines.org/
 
 ## M
 
@@ -228,6 +232,20 @@ OmegaT 产生/消费的标准双语交换格式。GCWP 不直接接触 XLIFF —
 
 ## Y
 
+### YAML vs JSON
+
+GCWP 故意按层级边界把两种格式分开:
+
+- **Wrapper ↔ CLI** (stdin / stdout) — **JSON**。每行一个 JSON 对象。
+  机器到机器,人从不读。
+- **用户 ↔ CLI** (Shell 层) — **YAML**。`--yaml` flag 与
+  `gallate.yaml` 项目文件。人可读。
+
+理由:JSON 是程序间通信的通用语;YAML 更适合人编辑的文件。两者混用
+会让 JSON 漏进用户面(坏 UX),或 YAML 上线缆(机器解析成本高)。本规范
+各取所长。
+
 ### YAML Line Protocol
 
-GCWP 线缆格式:每行一个 YAML 文档,推荐 flow-mapping 单行形式。
+**已弃用。** 早期草案使用 YAML Line Protocol;1.0 之前切换为
+JSON Line Protocol。CLI 实现**不得**再发 YAML 形式。

@@ -68,7 +68,7 @@ Status **不是**事件流中的一项。它是**同步查询 / 应答**:
 ```text
 Wrapper                          CLI
    │                              │
-   │  ── status.yaml-stream ───▶  │   (单行,单文档)
+   │  ── status.jsonl ───▶  │   (单行,一个 JSON 对象)
    │                              │   或单独的 `cli status --yaml`
    │  ◀── single status doc ───  │   invocation
    │                              │
@@ -97,12 +97,12 @@ $ cli status --yaml
 
 避免污染操作 stdin/stdout。Wrapper 在长操作频繁轮询时倾向此方式。
 
-### 线缆格式冲突解决
+### 线缆格式
 
-> **Status 文档是 YAML,不是 JSON,不是 JSONL。**
-
-GCWP 全局规则适用(见 [02-核心协议.md § YAML Line Protocol](./02-core-protocol.md))。
-没有 JSON 形式。若 `cli status` 返回 JSON,即为 CLI 违反协议。
+Status 文档与所有其他 GCWP 消息使用同一种线缆格式:每行一个 JSON 对象
+(标准 [JSON Line Protocol](./02-core-protocol.md#json-line-protocol))。
+Status 不再有独立 YAML 形式。若 `cli status` 返回 JSON Lines 以外的内容,
+即为 CLI 违反协议。
 
 ---
 

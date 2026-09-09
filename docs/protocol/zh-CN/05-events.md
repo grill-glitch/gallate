@@ -2,7 +2,7 @@
 
 > 状态:**规范性**。定义 CLI 在操作过程中写到 stdout 的实时事件流。
 
-事件是 Wrapper 的主要实时信号。必须是 YAML Line Protocol 格式。
+事件是 Wrapper 的主要实时信号。必须是 [JSON Line Protocol](./02-core-protocol.md#json-line-protocol) 格式(每行一个 JSON 对象写在 stdout)。
 
 ## 标准事件
 

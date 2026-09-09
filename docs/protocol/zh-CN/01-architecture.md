@@ -16,7 +16,7 @@
 │                 Wrapper                 │
 │   GCWP client · 项目加载 · 集成胶水      │
 └────────────────────┬────────────────────┘
-                     │ GCWP (YAML Line Protocol)
+                     │ GCWP (JSON Line Protocol)
                      │  (CLI 数量不受限)
        ┌─────────────┼─────────────┐
        ▼             ▼             ▼
@@ -59,7 +59,7 @@ OmegaT 不得:
 | --- | --- |
 | CLI 发现 | 找可用 CLI(文件系统、注册表) |
 | CLI 进程管理 | 启动、监控、终止、清理 |
-| 协议转换 | YAML Line Protocol ↔ OmegaT 数据结构 |
+| 协议转换 | JSON Line Protocol ↔ OmegaT 数据结构 |
 | `gallate.yaml` 加载 | 项目配置文件 |
 | Input / Output 配置 | 转为操作请求 |
 | 事件转发 | CLI 事件 → OmegaT UI |
