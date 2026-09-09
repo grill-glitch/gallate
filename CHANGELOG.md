@@ -98,3 +98,43 @@ Affected files:
 - `docs/shell-layer/examples/full-project/gallate.yaml` and
     `docs/shell-layer/examples/minimal-project/gallate.yaml` —
     reference examples updated with the new `text:` block.
+
+### Source-context: normative four-field data model
+
+The `text.hardcoded` source-context previously documented three
+"representations" (XLIFF / PO / JSON), with no canonical model.
+This was a divergence hazard — different CLIs produced
+incompatible files.
+
+Replaced with a single **four-field data model** (`file` /
+`line` / `end_line` / `snippet`) that is the same regardless of
+output format. XLIFF / PO / JSON are now described as **three
+serializations of the same model**, not three independent shapes.
+
+Key rules:
+
+- The CLI MUST emit all four fields (`file` / `line` / `end_line`
+    / `snippet`) on every `text.hardcoded` unit. Missing fields
+    use sentinel values (`line: 0`, `end_line: 0`, `snippet: ""`).
+- XLIFF serialization uses `<context-group name="source-context">`
+    with four `<context>` children keyed by exact `context-type`
+    values: `sourcefile` / `linenumber` / `endlinenumber` /
+    `snippet`.
+- PO serialization collapses to one `#: file:N` comment per
+    captured line — `snippet` is reconstructed by the consumer
+    by re-reading the source file (PO is **declared lossy**).
+- JSON serialization uses exact keys `file` / `line` /
+    `end_line` / `snippet`.
+- A Wrapper / OmegaT MUST round-trip between XLIFF and JSON
+    without loss. Round-trip with PO loses `snippet`.
+- The CLI MUST NOT pick a lossy format (`po`) when the user
+    requested lossless (`xliff` / `json`).
+
+Affected files:
+
+- `docs/shell-layer/05-config-file.md` and its Chinese translation
+    — `metadata.location` / `metadata.source_context` field
+    descriptions sharpened; full `source-context` subsection
+    rewritten with the normative model.
+- No schema change (the data model lives at the Shell layer,
+    not at the IPC layer).

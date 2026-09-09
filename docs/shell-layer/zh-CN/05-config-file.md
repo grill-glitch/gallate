@@ -215,8 +215,8 @@ text:
 | `format` | enum | 输出格式。标准:`xliff` / `po` / `json`。 |
 | `layout` | enum | 文件布局。标准:`flat` / `mirror` / `single`。见 [12-file-structure.md](./12-file-structure.md)。 |
 | `metadata.original_file` | bool | 若为 true,每个 `<trans-unit>` 携带 `original-file` 属性,标明游戏归档内的源资源路径。默认 `true`。 |
-| `metadata.source_context` | bool | 若为 true,每个 `text.hardcoded` 单元携带 `source-context` 字段,含周边源代码(见下)。默认 `true`。 |
-| `metadata.location` | bool | 若为 true,单元携带 `line` / `offset` / `length`(引擎知道时)。默认 `true`。 |
+| `metadata.source_context` | bool | 若为 true,每个 `text.hardcoded` 单元携带四字段源代码上下文记录(`file` / `line` / `end_line` / `snippet`),详见下文 `source-context` 一节。默认 `true`。 |
+| `metadata.location` | bool | 若为 true,非 hardcoded 单元携带 `line` / `offset` / `length`,标识源字符串在文件内的位置。默认 `true`。`text.hardcoded` 单元的位置走 `source-context` 而非此处。 |
 | `metadata.engine_path` | bool | 若为 true,单元携带引擎内部逻辑路径(引擎定义)。默认 `true`。 |
 | `hardcoded.context_lines` | int | `text.hardcoded` 单元捕获周边代码行数。默认 `3`。 |
 | `hardcoded.max_bytes` | int | 每单元捕获的 payload 上限。默认 `4096`。 |
@@ -239,22 +239,45 @@ CLI **必须**在能拿到值时发出 `original-file`。当 `metadata.original_
 
 #### `source-context`(对 hardcoded sub-media)
 
-CLI 提取 `text.hardcoded` 字符串(嵌入脚本或二进制资源的字符串)时,**必须**同时捕获源代码上下文:周边代码行,以便译者看到实际用法。
+> ⚠ **规范性数据模型。** CLI **必须**把每个 `text.hardcoded` 单元的源代码
+> 上下文捕获为一个固定数据模型。选择的输出格式(XLIFF / PO / JSON)只是
+> 一种序列化 —— Wrapper / OmegaT 按同一组字段读取,与格式无关。
 
-示例:
+CLI 提取 `text.hardcoded` 字符串(嵌入脚本或二进制资源的字符串)时,
+把源代码上下文捕获为一个**四字段记录**:
 
-```text
-# Hardcoded 字符串在 scenes/day1/scene_001.rpy:42
+| 字段 | 类型 | 必填 | 含义 |
+| --- | --- | --- | --- |
+| `file` | path | 是 | 字符串所在文件的源路径。与单元的 `original-file` 相同。 |
+| `line` | int | 是 | 字符串所在行(1-based)。 |
+| `end_line` | int | 是 | 捕获片段最后一行(1-based)。单行字符串时与 `line` 相等。 |
+| `snippet` | string | 是 | 捕获的源行,以 `\n` 连接。前导行号可选但建议。 |
 
- 41 │     if player.gender == "male":
- 42 │         narrator("Hello {player}.")
- 43 │     else:
- 44 │         narrator("Hello {playeress}.")
+`snippet` 长度受 `hardcoded.max_bytes`(默认 4096)限制。CLI 需要截断时
+**必须**保留第一行(含字符串的那一行)完整。
+
+##### 数据模型示例
+
+字符串 `"Hello {player}."` 在 `scenes/day1/scene_001.rpy:42`,
+配置 3 行上下文时产出此记录:
+
+```yaml
+context:
+  file: scenes/day1/scene_001.rpy
+  line: 42
+  end_line: 44
+  snippet: |
+    41 │     if player.gender == "male":
+    42 │         narrator("Hello {player}.")
+    43 │     else:
 ```
 
-字符串 `"Hello {player}."` 被提取,其 source-context 捕获 41–43 行(按配置 3 行)。捕获块进入翻译单元,作为注释或上下文字段。
+##### 各格式的序列化
 
-XLIFF 表示:
+CLI **必须**把同一组四字段序列化到所选格式。Wrapper / OmegaT 转换器
+**必须**能在两种格式之间无损往返。
+
+**XLIFF**(`<trans-unit>`):
 
 ```xml
 <trans-unit id="tu-0042" original-file="scenes/day1/scene_001.rpy">
@@ -263,24 +286,33 @@ XLIFF 表示:
   <context-group name="source-context" purpose="information">
     <context context-type="sourcefile">scenes/day1/scene_001.rpy</context>
     <context context-type="linenumber">42</context>
-    <context context-type="snippet">
-41 │     if player.gender == "male":
+    <context context-type="endlinenumber">44</context>
+    <context context-type="snippet">41 │     if player.gender == "male":
 42 │         narrator("Hello {player}.")
 43 │     else:</context>
   </context-group>
 </trans-unit>
 ```
 
-PO 表示:
+必需的 `context-type` 键:`sourcefile`、`linenumber`、`endlinenumber`、
+`snippet`。CLI **可**发额外 `<context>` 兄弟(如 `columnnumber`),但
+**不得**重命名这四个。
+
+**PO**(`#:` 引用注释):
 
 ```po
-#: scenes/day1/scene_001.rpy:41
 #: scenes/day1/scene_001.rpy:42
+#: scenes/day1/scene_001.rpy:43
+#: scenes/day1/scene_001.rpy:44
 msgid "Hello {player}."
 msgstr "你好 {player}。"
 ```
 
-JSON 表示(引擎定义):
+PO 没有结构化上下文字段;四字段模型坍缩为每行一个 `#: file:line` 注释。
+`file` 隐含在注释目标中;`line` 与 `end_line` 由注释范围表达。
+PO 无法承载 `snippet` 文本 —— 见下"有损格式"。
+
+**JSON**:
 
 ```json
 {
@@ -288,12 +320,43 @@ JSON 表示(引擎定义):
   "source": "Hello {player}.",
   "target": "你好 {player}。",
   "context": {
-    "original_file": "scenes/day1/scene_001.rpy",
+    "file": "scenes/day1/scene_001.rpy",
     "line": 42,
+    "end_line": 44,
     "snippet": "41 │     if player.gender == \"male\":\n42 │         narrator(\"Hello {player}.\")\n43 │     else:"
   }
 }
 ```
+
+JSON 键**必须**恰好为:`file`、`line`、`end_line`、`snippet`。
+允许额外键,但**不得**替换四个中的任何一个。
+
+##### 有损格式
+
+PO 天然有损:`snippet` 文本在标准 PO 中无法表示。Wrapper / OmegaT 应回退到:
+
+1. 解析 `#: file:N` 注释,恢复 `file` 与 `line` / `end_line`。
+2. 按恢复的行范围重新读取源文件,重建 `snippet`(CLI 不需嵌入)。
+
+JSON 无损。XLIFF 无损。
+
+CLI 在用户要求无损格式时**不得**挑有损格式。`text.format: po`
+是刻意的信息损失选择;`text.format: xliff` 或 `json` 保留所有四个字段。
+
+##### 引擎无法定位源时
+
+引擎无法定位字符串源(二进制 blob、混淆字节码)时,四字段坍缩为:
+
+```yaml
+context:
+  file: <字符串来自的资源文件>
+  line: 0
+  end_line: 0
+  snippet: ""
+```
+
+CLI **必须**用这些哨兵值发出四字段记录,而**不得**省略 `context-group` /
+`context:` 对象。
 
 #### `location`
 

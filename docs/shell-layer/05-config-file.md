@@ -249,8 +249,8 @@ text:
 | `format` | enum | Output format. Standard: `xliff` / `po` / `json`. |
 | `layout` | enum | File layout. Standard: `flat` / `mirror` / `single`. See [12-file-structure.md](./12-file-structure.md). |
 | `metadata.original_file` | bool | If true, every `<trans-unit>` carries an `original-file` attribute naming the source resource path inside the game archive. Default: `true`. |
-| `metadata.source_context` | bool | If true, every `text.hardcoded` unit carries a `source-context` field with the surrounding source code (see below). Default: `true`. |
-| `metadata.location` | bool | If true, units carry `line` / `offset` / `length` when the engine knows them. Default: `true`. |
+| `metadata.source_context` | bool | If true, every `text.hardcoded` unit carries the four-field source-context record (`file` / `line` / `end_line` / `snippet`) described in the `source-context` subsection below. Default: `true`. |
+| `metadata.location` | bool | If true, non-hardcoded units carry `line` / `offset` / `length` of the source string inside its file. Default: `true`. For `text.hardcoded` units, position is in `source-context` instead. |
 | `metadata.engine_path` | bool | If true, units carry the engine-internal logical path (engine-defined). Default: `true`. |
 | `hardcoded.context_lines` | int | Lines of surrounding code to capture for `text.hardcoded` units. Default: `3`. |
 | `hardcoded.max_bytes` | int | Upper bound on the captured context payload, per unit. Default: `4096`. |
@@ -278,28 +278,49 @@ Wrapper / OmegaT SHOULD treat its absence as "unknown source".
 
 #### `source-context` (for hardcoded sub-media)
 
+> ⚠ **Normative data model.** The CLI MUST capture source context
+> for every `text.hardcoded` unit as a fixed data model. The chosen
+> output format (XLIFF / PO / JSON) is only a serialization — the
+> Wrapper / OmegaT reads the same four fields regardless of format.
+
 When a CLI extracts `text.hardcoded` strings — strings embedded in
-script files or binary resources — it MUST also capture the source
-context: the surrounding lines of code so a translator can read the
-actual usage.
+script files or binary resources — it captures the source context as
+a **four-field record**:
 
-Example:
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `file` | path | yes | Source path of the file the string lives in. Same as `original-file` for the unit. |
+| `line` | int | yes | 1-based line number where the string lives. |
+| `end_line` | int | yes | 1-based last line number of the captured snippet. Equals `line` for single-line strings. |
+| `snippet` | string | yes | The captured source lines, joined with `\n`. Leading line number prefixes are optional but recommended. |
 
-```text
-# Hardcoded string in scenes/day1/scene_001.rpy:42
+`snippet` length is bounded by `hardcoded.max_bytes` (default 4096).
+The CLI MUST truncate to the byte limit if needed, but MUST keep the
+first line (the one containing the string) intact.
 
- 41 │     if player.gender == "male":
- 42 │         narrator("Hello {player}.")
- 43 │     else:
- 44 │         narrator("Hello {playeress}.")
+##### Example data model
+
+The string `"Hello {player}."` in `scenes/day1/scene_001.rpy:42`
+with 3 lines of context produces this record:
+
+```yaml
+context:
+  file: scenes/day1/scene_001.rpy
+  line: 42
+  end_line: 44
+  snippet: |
+    41 │     if player.gender == "male":
+    42 │         narrator("Hello {player}.")
+    43 │     else:
 ```
 
-The string `"Hello {player}."` is extracted, and its source-context
-captures lines 41–43 (3 lines of context as configured). The
-captured block goes into the translation unit as a comment or
-context field.
+##### Serialization per format
 
-XLIFF representation:
+The CLI MUST serialize the same four fields into the chosen format.
+Wrapper / OmegaT converters MUST round-trip the model through
+either format without loss.
+
+**XLIFF** (`<trans-unit>`):
 
 ```xml
 <trans-unit id="tu-0042" original-file="scenes/day1/scene_001.rpy">
@@ -308,24 +329,35 @@ XLIFF representation:
   <context-group name="source-context" purpose="information">
     <context context-type="sourcefile">scenes/day1/scene_001.rpy</context>
     <context context-type="linenumber">42</context>
-    <context context-type="snippet">
-41 │     if player.gender == "male":
+    <context context-type="endlinenumber">44</context>
+    <context context-type="snippet">41 │     if player.gender == "male":
 42 │         narrator("Hello {player}.")
 43 │     else:</context>
   </context-group>
 </trans-unit>
 ```
 
-PO representation:
+Required `context-type` keys: `sourcefile`, `linenumber`,
+`endlinenumber`, `snippet`. CLI MAY emit additional `<context>`
+siblings (e.g. `columnnumber`) but MUST NOT rename the four.
+
+**PO** (`#:` reference comments):
 
 ```po
-#: scenes/day1/scene_001.rpy:41
 #: scenes/day1/scene_001.rpy:42
+#: scenes/day1/scene_001.rpy:43
+#: scenes/day1/scene_001.rpy:44
 msgid "Hello {player}."
 msgstr "你好 {player}。"
 ```
 
-JSON representation (engine-defined):
+PO has no structured context fields; the four-field model collapses
+to one `#: file:line` comment per captured line. The `file` field
+is implied by the comment target; `line` and `end_line` are the
+range covered by the comments. There is no room for `snippet` text
+in PO — see "Lossy formats" below.
+
+**JSON**:
 
 ```json
 {
@@ -333,12 +365,48 @@ JSON representation (engine-defined):
   "source": "Hello {player}.",
   "target": "你好 {player}。",
   "context": {
-    "original_file": "scenes/day1/scene_001.rpy",
+    "file": "scenes/day1/scene_001.rpy",
     "line": 42,
+    "end_line": 44,
     "snippet": "41 │     if player.gender == \"male\":\n42 │         narrator(\"Hello {player}.\")\n43 │     else:"
   }
 }
 ```
+
+JSON keys MUST be exactly: `file`, `line`, `end_line`, `snippet`.
+Additional keys are allowed but MUST NOT replace any of the four.
+
+##### Lossy formats
+
+PO is intentionally lossy: `snippet` text cannot be represented
+inside standard PO. Wrapper / OmegaT SHOULD fall back to:
+
+1. Parsing `#: file:N` comments to recover `file` and `line`/
+   `end_line`.
+2. Re-reading the source file at the captured line range to
+   reconstruct `snippet` (the CLI does not need to embed it).
+
+JSON is lossless. XLIFF is lossless.
+
+The CLI MUST NOT pick a lossy format when the user requested a
+lossless one. `text.format: po` is a deliberate loss-of-information
+choice; `text.format: xliff` or `json` preserve all four fields.
+
+##### When the engine cannot capture
+
+When the engine cannot locate the string's source (binary blob,
+obfuscated bytecode), the four fields collapse:
+
+```yaml
+context:
+  file: <the resource file the string came from>
+  line: 0
+  end_line: 0
+  snippet: ""
+```
+
+CLI MUST emit the four-field record with these sentinel values
+rather than omitting the `context-group` / `context:` object.
 
 #### `location`
 
