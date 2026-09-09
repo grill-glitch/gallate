@@ -1,0 +1,87 @@
+# Validation rules schema — returned by `cli validation --yaml`.
+# See docs/protocol/08-validation.md.
+
+$schema: https://json-schema.org/draft-07/schema#
+$id: https://github.com/grill-glitch/gallate/schema/validation.schema.yaml
+title: ValidationRules
+description: |
+  A document containing engine-specific validation rules. CLI returns
+  one of these per `cli validation --yaml`.
+
+required:
+  - type
+  - rules
+
+properties:
+  type:
+    type: string
+    const: validation
+
+  rules:
+    type: array
+    items:
+      type: object
+      required:
+        - id
+        - type
+        - scope
+        - severity
+      properties:
+        id:
+          type: string
+          description: Stable rule id (kebab-case recommended).
+          pattern: '^[a-z][a-z0-9-]+$'
+        type:
+          type: string
+          enum:
+            - regex
+            - placeholder
+            - constraint
+        scope:
+          type: string
+          enum:
+            - text
+            - source
+            - target
+            - placeholder
+            - metadata
+            - resource
+        severity:
+          type: string
+          enum:
+            - info
+            - warning
+            - error
+        pattern:
+          type: string
+          description: Regex / placeholder pattern (engine-defined flavor).
+        flags:
+          type: array
+          items:
+            type: string
+          description: Regex flags (engine-defined).
+        preserve:
+          type: boolean
+          description: Whether the matched region MUST appear unchanged in target.
+        constraint:
+          type: object
+          description: Constraint parameters (for type=constraint).
+          properties:
+            maxLength:
+              type: number
+            minLength:
+              type: number
+            maxBytes:
+              type: number
+            noLineBreak:
+              type: boolean
+          additionalProperties: true
+        message:
+          type: string
+          description: Custom message override.
+        description:
+          type: string
+          description: Human-readable explanation of the rule.
+      additionalProperties: true
+
+additionalProperties: true

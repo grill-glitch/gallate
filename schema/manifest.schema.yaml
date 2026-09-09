@@ -1,0 +1,67 @@
+# Manifest schema — returned by `cli manifest --yaml`.
+# See docs/protocol/03-discovery.md § Manifest.
+
+$schema: https://json-schema.org/draft-07/schema#
+$id: https://github.com/grill-glitch/gallate/schema/manifest.schema.yaml
+title: Manifest
+description: CLI identity document.
+
+required:
+  - type
+  - id
+  - name
+  - version
+  - protocol
+
+properties:
+  type:
+    type: string
+    const: manifest
+
+  id:
+    type: string
+    description: |
+      Stable CLI identifier (kebab-case recommended).
+      MUST NOT change between compatible releases.
+    pattern: '^[a-z][a-z0-9-]+$'
+
+  name:
+    type: string
+    description: Human-readable CLI name. May change.
+
+  version:
+    type: string
+    description: CLI semantic version.
+
+  protocol:
+    type: object
+    required:
+      - name
+      - version
+    properties:
+      name:
+        type: string
+        const: gcwp
+      version:
+        type: string
+        pattern: '^[0-9]+\.[0-9]+$'
+
+  engine:
+    type: object
+    description: Engine identification (recommended for engine-specific CLIs).
+    required:
+      - id
+    properties:
+      id:
+        type: string
+        description: Stable engine id (kebab-case).
+        pattern: '^[a-z][a-z0-9-]+$'
+      versions:
+        type: array
+        description: |
+          Engine version range strings (e.g. `["2.x"]`, `["1.0", "1.1"]`).
+          Implementation decides the exact syntax.
+        items:
+          type: string
+
+additionalProperties: true

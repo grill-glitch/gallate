@@ -1,0 +1,55 @@
+# Operation Response schema — emitted by CLI on stdout immediately after
+# receiving a request, before the event stream begins.
+# See docs/protocol/02-core-protocol.md § Operation flow.
+
+$schema: https://json-schema.org/draft-07/schema#
+$id: https://github.com/grill-glitch/gallate/schema/response.schema.yaml
+title: OperationResponse
+description: Acknowledgement of an operation request.
+
+required:
+  - type
+  - id
+  - operation
+  - accepted
+
+properties:
+  type:
+    type: string
+    const: response
+
+  id:
+    type: string
+    description: |
+      The operation id from the request. The CLI MAY replace it with
+      a different value if it has already accepted the operation
+      under another id (e.g. resume from a checkpoint).
+    pattern: '^[A-Za-z0-9_-]+$'
+
+  operation:
+    type: string
+    description: The operation name as accepted.
+
+  accepted:
+    type: boolean
+    description: |
+      True if the CLI will execute the operation; false if the CLI
+      refuses at this point (e.g. unsupported operation). On `false`,
+      CLI follows with an error event and a non-zero exit.
+
+  protocol:
+    type: object
+    description: Echoes the negotiated protocol version.
+    properties:
+      version:
+        type: string
+        pattern: '^[0-9]+\.[0-9]+$'
+
+  capabilities:
+    type: object
+    description: |
+      Optional subset of `features` relevant to this operation.
+      Allows CLI to advertise dynamic capability changes.
+    additionalProperties: true
+
+additionalProperties: true

@@ -1,0 +1,82 @@
+# Operation Request schema — sent by Wrapper over stdin.
+# See docs/protocol/04-operations.md § Operation Request.
+
+$schema: https://json-schema.org/draft-07/schema#
+$id: https://github.com/grill-glitch/gallate/schema/request.schema.yaml
+title: OperationRequest
+description: A single operation Wrapper asks the CLI to perform.
+
+required:
+  - type
+  - id
+  - operation
+
+properties:
+  type:
+    type: string
+    const: request
+
+  id:
+    type: string
+    description: |
+      Operation correlation id (ULID or UUIDv7 recommended).
+      Used to correlate every event, status snapshot, and final exit.
+    pattern: '^[A-Za-z0-9_-]+$'
+
+  operation:
+    type: string
+    description: |
+      Operation name. Standard names: extract / inject / unpack / repack / build.
+      CLI MAY add engine-specific names.
+
+  input:
+    type: array
+    description: Input paths.
+    items:
+      oneOf:
+        - type: string
+          description: Plain relative or absolute path.
+        - type: object
+          required:
+            - path
+          properties:
+            path:
+              type: string
+            kind:
+              type: string
+              enum:
+                - file
+                - directory
+
+  output:
+    type: array
+    description: Output paths. Same shape as input.
+    items:
+      oneOf:
+        - type: string
+        - type: object
+          required:
+            - path
+          properties:
+            path:
+              type: string
+            kind:
+              type: string
+              enum:
+                - file
+                - directory
+
+  ignore:
+    type: array
+    description: Ignore patterns (glob syntax engine-defined).
+    items:
+      type: string
+
+  options:
+    type: object
+    description: |
+      Operation-level options. Engine-namespaced keys recommended
+      (e.g. `artemis.text_encoding`).
+    additionalProperties: true
+
+additionalProperties: true

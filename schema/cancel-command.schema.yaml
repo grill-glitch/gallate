@@ -1,0 +1,28 @@
+# Cancel command schema — sent by Wrapper over stdin mid-operation.
+# See docs/protocol/11-process.md § Cancellation.
+
+$schema: https://json-schema.org/draft-07/schema#
+$id: https://github.com/grill-glitch/gallate/schema/cancel-command.schema.yaml
+title: CancelCommand
+description: Asks the CLI to stop the in-flight operation gracefully.
+
+required:
+  - type
+  - command
+
+properties:
+  type:
+    type: string
+    const: command
+
+  command:
+    type: string
+    const: cancel
+
+  reason:
+    type: string
+    description: |
+      Optional human-readable reason; not interpreted by the CLI.
+      Goes to stderr if logged.
+
+additionalProperties: true

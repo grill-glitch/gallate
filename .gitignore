@@ -1,0 +1,3 @@
+# Temporary files emitted by scripts/validate-schemas.sh
+*.schema.json.tmp
+/tmp/*.json

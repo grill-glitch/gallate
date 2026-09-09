@@ -1,0 +1,63 @@
+# Status schema — returned by `cli status --yaml` on demand.
+# See docs/protocol/06-status.md.
+
+$schema: https://json-schema.org/draft-07/schema#
+$id: https://github.com/grill-glitch/gallate/schema/status.schema.yaml
+title: Status
+description: Point-in-time snapshot of an in-flight CLI.
+
+required:
+  - type
+  - state
+
+properties:
+  type:
+    type: string
+    const: status
+
+  state:
+    type: string
+    enum:
+      - idle
+      - preparing
+      - running
+      - completed
+      - failed
+      - cancelled
+
+  operation:
+    type: string
+    description: Currently running operation (only meaningful inside `running`).
+
+  phase:
+    type: string
+    description: Current sub-phase inside `running`.
+
+  progress:
+    type: object
+    properties:
+      current:
+        type: number
+      total:
+        type: number
+        nullable: true
+    additionalProperties: false
+
+  current:
+    type: object
+    description: Currently processed resource.
+    properties:
+      path:
+        type: string
+    additionalProperties: true
+
+  started_at:
+    type: string
+    format: date-time
+    description: ISO-8601 timestamp when the operation began.
+
+  pid:
+    type: number
+    description: Optional CLI process id (debug aid).
+
+additionalProperties: true

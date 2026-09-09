@@ -1,0 +1,62 @@
+# full-cli errors.jsonl
+#
+# Traces showing how the CLI reports different classes of failure.
+# Each block ends with an exit code. Wrapper MUST key off `code`,
+# not `message`.
+
+# === A) Unsupported operation ===
+
+# Wrapper sends:
+#   {type: request, id: 01HOP, operation: demux}
+
+# CLI responds:
+{type: response, id: 01HOP, operation: demux, accepted: false}
+{type: event, event: error, code: UNSUPPORTED_OPERATION, message: "Operation 'demux' is not implemented by this CLI"}
+
+# CLI exits with code 4.
+
+# === B) Invalid input ===
+
+# Wrapper sends:
+#   {type: request, id: 01HINPUT, operation: extract, input: [{path: ./missing.pfs, kind: file}]}
+
+# CLI responds:
+{type: response, id: 01HINPUT, operation: extract, accepted: true}
+{type: event, event: started, id: 01HINPUT, operation: extract}
+{type: event, event: error, code: FILE_NOT_FOUND, message: "Input file does not exist", path: ./missing.pfs}
+
+# CLI exits with code 1.
+
+# === C) Archive corrupted ===
+
+# Wrapper sends:
+#   {type: request, id: 01HCORRUPT, operation: extract, input: [{path: ./broken.pfs, kind: file}]}
+
+# CLI responds:
+{type: response, id: 01HCORRUPT, operation: extract, accepted: true}
+{type: event, event: started, id: 01HCORRUPT, operation: extract}
+{type: event, event: phase, name: scanning}
+{type: event, event: error, code: ARCHIVE_CORRUPTED, message: "PFS magic header not recognized", path: ./broken.pfs}
+
+# CLI exits with code 1.
+
+# === D) Protocol violation by Wrapper (CLI defends) ===
+
+# Wrapper sends garbage over stdin:
+#   {this is not a valid GCWP message
+
+# CLI responds:
+{type: event, event: error, code: PROTOCOL_ERROR, message: "Cannot parse request message"}
+
+# CLI exits with code 7.
+
+# === E) Unsupported configuration ===
+
+# Wrapper sends:
+#   {type: request, id: 01HCFG, operation: extract, input: [{path: ./game.pfs, kind: file}], options: {demo_engine.unknown_option: true}}
+
+# CLI responds:
+{type: response, id: 01HCFG, operation: extract, accepted: false}
+{type: event, event: error, code: INVALID_CONFIG, message: "Unknown option demo_engine.unknown_option", path: ./game.pfs}
+
+# CLI exits with code 3.

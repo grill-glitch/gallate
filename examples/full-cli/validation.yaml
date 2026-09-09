@@ -1,0 +1,52 @@
+# full-cli validation rules
+# Returned by: full-cli validation --yaml
+
+type: validation
+
+rules:
+
+  - id: control-code
+    type: regex
+    scope: text
+    pattern: "\\[A-Z]+(?:_[0-9]+)?"
+    flags: []
+    severity: error
+    description: |
+      Detects engine control codes like `[FADE_IN_3]` that must be
+      preserved in the translation target.
+
+  - id: player-name
+    type: placeholder
+    scope: text
+    pattern: "\\{player\\}"
+    preserve: true
+    severity: error
+    description: |
+      The `{player}` placeholder must appear verbatim in target.
+
+  - id: narrator-name
+    type: placeholder
+    scope: target
+    pattern: "\\{narrator\\}"
+    preserve: true
+    severity: error
+
+  - id: max-line-length
+    type: constraint
+    scope: text
+    constraint:
+      maxLength: 80
+      noLineBreak: false
+    severity: warning
+    description: |
+      Warns when a single line exceeds the engine's textbox width.
+
+  - id: max-target-bytes
+    type: constraint
+    scope: target
+    constraint:
+      maxBytes: 240
+    severity: error
+    description: |
+      Translation targets must fit within the engine's per-string
+      byte budget after UTF-8 encoding.

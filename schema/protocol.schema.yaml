@@ -1,0 +1,42 @@
+# Protocol version announcement / handshake.
+# See docs/protocol/02-core-protocol.md § Protocol version.
+
+$schema: https://json-schema.org/draft-07/schema#
+$id: https://github.com/grill-glitch/gallate/schema/protocol.schema.yaml
+title: Protocol
+description: Protocol version announcement.
+
+required:
+  - type
+  - protocol
+  - version
+
+properties:
+  type:
+    type: string
+    const: protocol
+
+  protocol:
+    type: object
+    description: Protocol identification.
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        const: gcwp
+        description: Protocol short-name. MUST be `gcwp`.
+      version:
+        type: string
+        description: |
+          Protocol version as MAJOR.MINOR (e.g. `1.0`).
+        pattern: '^[0-9]+\.[0-9]+$'
+
+  version:
+    type: string
+    description: |
+      Top-level `version` mirroring `protocol.version`. Reserved for
+      forward compatibility — currently identical to `protocol.version`.
+    pattern: '^[0-9]+\.[0-9]+$'
+
+additionalProperties: true

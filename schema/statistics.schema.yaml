@@ -1,0 +1,88 @@
+# Statistics schema — cumulative metrics for an operation.
+# See docs/protocol/07-statistics.md.
+
+$schema: https://json-schema.org/draft-07/schema#
+$id: https://github.com/grill-glitch/gallate/schema/statistics.schema.yaml
+title: Statistics
+description: Cumulative result metrics. A data model, not a log.
+
+required:
+  - type
+
+properties:
+  type:
+    type: string
+    const: statistics
+
+  files:
+    type: object
+    properties:
+      scanned:
+        type: number
+      matched:
+        type: number
+      processed:
+        type: number
+      skipped:
+        type: number
+      failed:
+        type: number
+    additionalProperties: true
+
+  text:
+    type: object
+    properties:
+      extracted:
+        type: number
+      injected:
+        type: number
+    additionalProperties: true
+
+  images:
+    type: object
+    properties:
+      extracted:
+        type: number
+      injected:
+        type: number
+    additionalProperties: true
+
+  audio:
+    type: object
+    properties:
+      extracted:
+        type: number
+      injected:
+        type: number
+    additionalProperties: true
+
+  video:
+    type: object
+    properties:
+      extracted:
+        type: number
+      injected:
+        type: number
+    additionalProperties: true
+
+  output:
+    type: object
+    properties:
+      created:
+        type: number
+      modified:
+        type: number
+      bytesRead:
+        type: number
+      bytesWritten:
+        type: number
+    additionalProperties: true
+
+  duration:
+    type: number
+    description: Wall-clock duration in seconds.
+
+additionalProperties: true
+description_extended: |
+  CLI MAY add engine-specific top-level keys (e.g. `artemis:` block).
+  Wrapper MUST ignore unknown keys per docs/protocol/12-compatibility.md.

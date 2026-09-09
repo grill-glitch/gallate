@@ -1,0 +1,29 @@
+# full-cli features
+# Returned by: full-cli features --yaml
+
+type: features
+
+operations:
+  extract: true
+  inject: true
+  build: true
+  unpack: true
+  repack: true
+
+resources:
+  text: true
+  image: true
+  audio: true
+  video: true
+
+validation:
+  syntax: true
+  regex: true
+  placeholder: true
+  constraint: true
+
+runtime:
+  events: true
+  status: true
+  statistics: true
+  cancellation: true

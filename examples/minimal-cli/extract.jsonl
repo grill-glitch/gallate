@@ -1,0 +1,30 @@
+# minimal-cli extract.jsonl
+#
+# Trace of:
+#   minimal-cli extract ./demo.pfs --yaml
+#
+# Lines starting with `#` are comments (CLI does not emit them).
+# Empty lines are for readability (CLI does not emit them).
+#
+# Real CLI emits only the YAML lines below on stdout.
+# The stderr channel would carry human-readable progress like:
+#     Scanning demo.pfs...
+#     Extracting 12 strings.
+#     Done.
+# which the Wrapper MUST NOT parse.
+
+# ----- Wrapper → CLI (over stdin) -----
+
+{type: request, id: 01HXYZAB, operation: extract, input: [{path: ./demo.pfs, kind: file}], output: [{path: ./demo.txt, kind: file}]}
+
+# ----- CLI → Wrapper (over stdout) -----
+
+{type: response, id: 01HXYZAB, operation: extract, accepted: true, protocol: {version: 1.0}}
+
+# Notice the minimal CLI does NOT claim events in its features document,
+# so the only required terminal event is `completed`. In practice even
+# a Basic CLI usually emits at least `started` / `completed`.
+
+{type: event, event: completed, id: 01HXYZAB, statistics: {files: {processed: 1}, text: {extracted: 12}}}
+
+# ----- CLI exits with code 0 -----

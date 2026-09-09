@@ -1,0 +1,119 @@
+# Event schema — emitted on stdout during an operation.
+# See docs/protocol/05-events.md.
+
+$schema: https://json-schema.org/draft-07/schema#
+$id: https://github.com/grill-glitch/gallate/schema/event.schema.yaml
+title: Event
+description: |
+  One entry in the operation event stream. Discriminate on `event`.
+
+required:
+  - type
+  - event
+
+properties:
+  type:
+    type: string
+    const: event
+
+  event:
+    type: string
+    enum:
+      - started
+      - phase
+      - progress
+      - file
+      - resource
+      - warning
+      - error
+      - validation
+      - statistics
+      - completed
+      - cancelled
+
+  id:
+    type: string
+    description: Operation id (correlation). Required for most events.
+
+  operation:
+    type: string
+    description: Operation name. Required for `started`.
+
+  name:
+    type: string
+    description: Phase name (for `phase` event).
+
+  current:
+    type: number
+    description: Progress current count (for `progress`).
+
+  total:
+    type: number
+    nullable: true
+    description: Progress total; `null` means indeterminate.
+
+  action:
+    type: string
+    description: File/resource action.
+    enum:
+      - scan
+      - read
+      - write
+      - create
+      - modify
+      - skip
+      - extract
+      - inject
+      - delete
+
+  path:
+    type: string
+    description: File or resource path.
+
+  code:
+    type: string
+    description: Stable error code (for `error` / `warning`).
+    pattern: '^[A-Z][A-Z0-9_]+$'
+
+  message:
+    type: string
+    description: Human-readable message.
+
+  severity:
+    type: string
+    enum:
+      - info
+      - warning
+      - error
+    description: Severity (for `validation` / `error`).
+
+  rule:
+    type: string
+    description: Validation rule id (for `validation` event).
+
+  source:
+    type: string
+    description: Source text (for `validation`).
+
+  target:
+    type: string
+    description: Target text (for `validation`).
+
+  file:
+    type: string
+
+  line:
+    type: number
+
+  offset:
+    type: number
+
+  length:
+    type: number
+
+  statistics:
+    type: object
+    description: Statistics payload (for `statistics` / `completed`).
+    additionalProperties: true
+
+additionalProperties: true

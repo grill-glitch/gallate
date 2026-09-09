@@ -1,0 +1,17 @@
+# full-cli manifest
+# Returned by: full-cli manifest --yaml
+
+type: manifest
+protocol:
+  name: gcwp
+  version: 1.0
+
+id: full
+name: Full GCWP Reference CLI
+version: 1.0.0
+
+engine:
+  id: demo-engine
+  versions:
+    - 1.x
+    - 2.x

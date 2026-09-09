@@ -1,0 +1,39 @@
+# GCWP root schema
+#
+# This file aggregates every per-message-type schema via $ref.
+# CLI / Wrapper authors can validate any GCWP message by resolving
+# the schema under the appropriate $ref.
+#
+# The file is YAML, but the schema semantics are JSON Schema draft-07.
+# To validate a document, convert this file to JSON with:
+#   yq -o=json . schema/gcwp.schema.yaml > /tmp/gcwp.schema.json
+# and pass it to any JSON Schema validator.
+
+$schema: https://json-schema.org/draft-07/schema#
+$id: https://github.com/grill-glitch/gallate/schema/gcwp.schema.yaml
+title: GCWP
+description: |
+  Root schema for the Gamelate CLI-Wrapper Protocol (GCWP).
+  All other schemas in this directory are referenced from here.
+
+type: object
+
+# GCWP messages on stdin/stdout come in several flavors. The root
+# schema uses oneOf to dispatch on `type`. Each variant references
+# a dedicated sub-schema.
+
+oneOf:
+  - $ref: ./protocol.schema.yaml
+  - $ref: ./manifest.schema.yaml
+  - $ref: ./features.schema.yaml
+  - $ref: ./request.schema.yaml
+  - $ref: ./response.schema.yaml
+  - $ref: ./event.schema.yaml
+  - $ref: ./status.schema.yaml
+  - $ref: ./statistics.schema.yaml
+  - $ref: ./validation.schema.yaml
+  - $ref: ./cancel-command.schema.yaml
+
+# A schema-level additionalProperties: false would be too strict
+# (GCWP allows forward-compatible extensions; see
+# docs/protocol/12-compatibility.md).

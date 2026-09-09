@@ -1,0 +1,83 @@
+# Features schema — returned by `cli features --yaml`.
+# See docs/protocol/03-discovery.md § Features.
+
+$schema: https://json-schema.org/draft-07/schema#
+$id: https://github.com/grill-glitch/gallate/schema/features.schema.yaml
+title: Features
+description: Static capability description of a CLI.
+
+required:
+  - type
+  - operations
+  - resources
+  - validation
+  - runtime
+
+properties:
+  type:
+    type: string
+    const: features
+
+  operations:
+    type: object
+    description: Operation support flags.
+    additionalProperties:
+      type: boolean
+    properties:
+      extract:
+        type: boolean
+      inject:
+        type: boolean
+      build:
+        type: boolean
+      unpack:
+        type: boolean
+      repack:
+        type: boolean
+
+  resources:
+    type: object
+    description: Media support flags.
+    additionalProperties:
+      type: boolean
+    properties:
+      text:
+        type: boolean
+      image:
+        type: boolean
+      audio:
+        type: boolean
+      video:
+        type: boolean
+
+  validation:
+    type: object
+    description: Validation capability flags.
+    additionalProperties:
+      type: boolean
+    properties:
+      syntax:
+        type: boolean
+      regex:
+        type: boolean
+      placeholder:
+        type: boolean
+      constraint:
+        type: boolean
+
+  runtime:
+    type: object
+    description: Runtime capability flags.
+    additionalProperties:
+      type: boolean
+    properties:
+      events:
+        type: boolean
+      status:
+        type: boolean
+      statistics:
+        type: boolean
+      cancellation:
+        type: boolean
+
+additionalProperties: true
