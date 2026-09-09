@@ -15,7 +15,7 @@
 
 正确(按 feature):
 
-        if features.resources.image:
+        if features.media.image:
             show_image
 ```
 
@@ -85,7 +85,7 @@ operations:
   unpack: true
   repack: true
 
-resources:
+media:
   text: true
   image: true
   audio: false
@@ -137,10 +137,10 @@ runtime:
 | operations | `build` | bool | 引擎构建 |
 | operations | `unpack` | bool | 引擎归档解包 |
 | operations | `repack` | bool | 引擎归档打包 |
-| resources | `text` | bool | **标准**文本媒体(baseline) |
-| resources | `image` | bool | **标准**图片媒体(baseline) |
-| resources | `audio` | bool | 引擎扩展媒体,仅在引擎支持时出现 |
-| resources | `video` | bool | 引擎扩展媒体,仅在引擎支持时出现 |
+| media | `text` | bool | **标准**文本媒体(baseline) |
+| media | `image` | bool | **标准**图片媒体(baseline) |
+| media | `audio` | bool | 引擎扩展媒体,仅在引擎支持时出现 |
+| media | `video` | bool | 引擎扩展媒体,仅在引擎支持时出现 |
 | validation | `syntax` | bool | 通用语法检查(引擎定义) |
 | validation | `regex` | bool | 正则规则 |
 | validation | `placeholder` | bool | 占位符保留 |

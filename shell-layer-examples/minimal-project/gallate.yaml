@@ -16,3 +16,17 @@ media:
   - image
 
 output: ./game-zh.pfs
+
+# Per-media defaults that `init` writes when the CLI supports them.
+# Both blocks use standard values; users edit them freely.
+text:
+  format: xliff
+  layout: flat
+  metadata:
+    original_file: true
+    source_context: true
+    location: true
+    engine_path: true
+
+image:
+  layout: sub_media_dirs

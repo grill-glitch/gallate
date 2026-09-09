@@ -33,6 +33,29 @@ scripts:
   post:
     - ./scripts/repack.py
 
+# ── Per-media output configuration ──────────────────────────────
+# Text media: XLIFF, flat layout, with original-file and source-context
+# for hardcoded strings.
+text:
+  format: xliff
+  layout: flat
+  metadata:
+    original_file: true
+    source_context: true
+    location: true
+    engine_path: true
+  hardcoded:
+    context_lines: 3
+    max_bytes: 4096
+    engine_extensions:
+      - .py
+      - .lua
+      - .rpy
+      - .ks
+
+image:
+  layout: sub_media_dirs
+
 # ── Engine options ──────────────────────────────────────────────
 # These keys are engine-specific. The standard CLI passes them
 # through verbatim. The engine wrapper interprets them.

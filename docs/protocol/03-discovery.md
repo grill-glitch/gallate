@@ -18,7 +18,7 @@ WRONG (anti-pattern):
 
 CORRECT (per-feature):
 
-        if features.resources.image:
+        if features.media.image:
             show_image
 ```
 
@@ -96,7 +96,7 @@ operations:
   unpack: true
   repack: true
 
-resources:
+media:
   text: true
   image: true
   audio: false
@@ -122,7 +122,7 @@ runtime:
                  │
        ┌─────────┼──────────┐
        │         │          │
-  Operations  Resources  Runtime
+  Operations    Media      Runtime
        │         │          │
   extract     text      status
   inject      image     events
@@ -149,10 +149,10 @@ each dimension.
 | operations | `build` | bool | Engine build |
 | operations | `unpack` | bool | Engine archive unpack |
 | operations | `repack` | bool | Engine archive repack |
-| resources | `text` | bool | **Standard** text media (baseline) |
-| resources | `image` | bool | **Standard** image media (baseline) |
-| resources | `audio` | bool | Engine-extension media — only present when supported |
-| resources | `video` | bool | Engine-extension media — only present when supported |
+| media | `text` | bool | **Standard** text media (baseline) |
+| media | `image` | bool | **Standard** image media (baseline) |
+| media | `audio` | bool | Engine-extension media — only present when supported |
+| media | `video` | bool | Engine-extension media — only present when supported |
 | validation | `syntax` | bool | Generic syntax check (engine-defined) |
 | validation | `regex` | bool | Regex rules |
 | validation | `placeholder` | bool | Placeholder preservation |

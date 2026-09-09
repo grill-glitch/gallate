@@ -66,6 +66,7 @@ is what the user invokes directly; the GCWP layer is what a Wrapper
 | 09 | [Standard Flags](./09-std-flags.md) | `--output`, `--ignore`, `--dry-run`, `-v`, `-q`, `--force` |
 | 10 | [Standard Output & Exit Codes](./10-stdout-stderr.md) | stdout vs stderr, exit code table |
 | 11 | [Conformance](./11-conformance.md) | What "compatible with Shell layer" means |
+| 12 | [File Structure](./12-file-structure.md) | What lives inside `text/`, `image/`, etc. |
 
 Chinese translations: [`zh-CN/`](./zh-CN/)
 

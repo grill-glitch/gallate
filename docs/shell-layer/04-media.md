@@ -23,7 +23,7 @@ might omit `image`; a no-text engine is not a valid gallate CLI.
 
 ## 4.2 Engine-extension media
 
-Audio, video, fonts, and any other resource kind beyond text/image
+Audio, video, fonts, and any other media kind beyond text/image
 are **engine-extension media**. The CLI defines them; the standard
 spec does not require any engine to implement them.
 
@@ -86,7 +86,7 @@ declare exactly what it supports without contortion.
 
 A CLI MAY define **sub-media** under any media — standard or
 extension. Sub-media distinguishes different *kinds* of the same
-resource type.
+media.
 
 Examples:
 
@@ -253,7 +253,7 @@ documents the supported subset in its
 document:
 
 ```yaml
-resources:
+media:
   text: true
   image: true
   audio: true

@@ -10,7 +10,7 @@ operations:
   unpack: true
   repack: true
 
-resources:
+media:
   text: true
   image: true
   audio: true

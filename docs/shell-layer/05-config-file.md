@@ -15,6 +15,10 @@ output:
 media:
 ignore:
 scripts:
+text:
+image:
+audio:
+video:
 engine:
 ```
 
@@ -25,6 +29,10 @@ engine:
 | `media`  | list   | Default media list                       |
 | `ignore` | list   | Default ignore patterns                  |
 | `scripts`| object | Pre / Post scripts                       |
+| `text`   | object | Text-media output configuration          |
+| `image`  | object | Image-media output configuration         |
+| `audio`  | object | Audio-media output configuration         |
+| `video`  | object | Video-media output configuration         |
 | `engine` | object | Engine-specific options                  |
 
 All keys are optional. An engine MAY recognize additional keys under
@@ -57,6 +65,23 @@ scripts:
   post:
     - ./scripts/repack.py
     - ./scripts/cleanup.py
+
+text:
+  format: xliff
+  layout: flat
+  metadata:
+    original_file: true
+    source_context: true
+    location: true
+    engine_path: true
+  hardcoded:
+    context_lines: 3
+    max_bytes: 4096
+    engine_extensions:
+      - .py
+      - .lua
+      - .rpy
+      - .ks
 
 engine:
   text_encoding: utf-8
@@ -183,7 +208,186 @@ user.
 
 ---
 
-## 5.8 `engine`
+## 5.8 Per-media output configuration
+
+Each standard media has its own top-level config block that
+controls how files in `text/`, `image/`, `audio/`, `video/` are
+structured and what metadata they carry. Engines MAY add their own
+per-extension-media blocks under the same pattern.
+
+### `text`
+
+```yaml
+text:
+  format: xliff            # xliff | po | json | engine-extension
+  layout: flat             # flat | mirror | single (see 12-file-structure.md)
+  sub_media_dirs: false    # ignored (sub-media live inside files for text)
+
+  # Metadata fields every translation unit MUST carry.
+  metadata:
+    original_file: true        # source path inside the game archive
+    source_context: true       # surrounding code/snippet (for hardcoded)
+    location: true             # line / offset / length when known
+    engine_path: true          # engine-internal logical path
+
+  # Source-context capture for hardcoded strings.
+  hardcoded:
+    context_lines: 3           # lines of surrounding source to capture
+    max_bytes: 4096            # cap on context payload per unit
+    engine_extensions:         # which engine file types count as code
+      - .py
+      - .lua
+      - .js
+      - .rpy
+      - .ks
+```
+
+#### Fields
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `format` | enum | Output format. Standard: `xliff` / `po` / `json`. |
+| `layout` | enum | File layout. Standard: `flat` / `mirror` / `single`. See [12-file-structure.md](./12-file-structure.md). |
+| `metadata.original_file` | bool | If true, every `<trans-unit>` carries an `original-file` attribute naming the source resource path inside the game archive. Default: `true`. |
+| `metadata.source_context` | bool | If true, every `text.hardcoded` unit carries a `source-context` field with the surrounding source code (see below). Default: `true`. |
+| `metadata.location` | bool | If true, units carry `line` / `offset` / `length` when the engine knows them. Default: `true`. |
+| `metadata.engine_path` | bool | If true, units carry the engine-internal logical path (engine-defined). Default: `true`. |
+| `hardcoded.context_lines` | int | Lines of surrounding code to capture for `text.hardcoded` units. Default: `3`. |
+| `hardcoded.max_bytes` | int | Upper bound on the captured context payload, per unit. Default: `4096`. |
+| `hardcoded.engine_extensions` | list | File extensions the engine treats as code for context capture. Empty list = engine decides. |
+
+#### `original-file`
+
+The `original-file` field lets a translator know exactly which file
+inside the game archive a translation unit came from. Without it,
+"errors" or follow-up QA cannot trace a missing translation back to
+its origin.
+
+Example XLIFF unit:
+
+```xml
+<trans-unit id="tu-0042" original-file="scenes/day1/scene_001.bin">
+  <source>Hello {player}</source>
+  <target>你好 {player}</target>
+</trans-unit>
+```
+
+The CLI MUST emit `original-file` whenever the value is knowable.
+When `metadata.original_file` is `false`, the CLI MAY omit it but
+Wrapper / OmegaT SHOULD treat its absence as "unknown source".
+
+#### `source-context` (for hardcoded sub-media)
+
+When a CLI extracts `text.hardcoded` strings — strings embedded in
+script files or binary resources — it MUST also capture the source
+context: the surrounding lines of code so a translator can read the
+actual usage.
+
+Example:
+
+```text
+# Hardcoded string in scenes/day1/scene_001.rpy:42
+
+ 41 │     if player.gender == "male":
+ 42 │         narrator("Hello {player}.")
+ 43 │     else:
+ 44 │         narrator("Hello {playeress}.")
+```
+
+The string `"Hello {player}."` is extracted, and its source-context
+captures lines 41–43 (3 lines of context as configured). The
+captured block goes into the translation unit as a comment or
+context field.
+
+XLIFF representation:
+
+```xml
+<trans-unit id="tu-0042" original-file="scenes/day1/scene_001.rpy">
+  <source>Hello {player}.</source>
+  <target>你好 {player}。</target>
+  <context-group name="source-context" purpose="information">
+    <context context-type="sourcefile">scenes/day1/scene_001.rpy</context>
+    <context context-type="linenumber">42</context>
+    <context context-type="snippet">
+41 │     if player.gender == "male":
+42 │         narrator("Hello {player}.")
+43 │     else:</context>
+  </context-group>
+</trans-unit>
+```
+
+PO representation:
+
+```po
+#: scenes/day1/scene_001.rpy:41
+#: scenes/day1/scene_001.rpy:42
+msgid "Hello {player}."
+msgstr "你好 {player}。"
+```
+
+JSON representation (engine-defined):
+
+```json
+{
+  "id": "tu-0042",
+  "source": "Hello {player}.",
+  "target": "你好 {player}。",
+  "context": {
+    "original_file": "scenes/day1/scene_001.rpy",
+    "line": 42,
+    "snippet": "41 │     if player.gender == \"male\":\n42 │         narrator(\"Hello {player}.\")\n43 │     else:"
+  }
+}
+```
+
+#### `location`
+
+For positional information the CLI knows (XLIFF calls this
+`<context context-type="linenumber">`; PO uses `file:line`). When
+unknown, the field is omitted.
+
+#### `engine_path`
+
+Engine-internal logical path. Engine-defined; CLI passes it through.
+When omitted, OmegaT falls back to `original-file`.
+
+### `image` / `audio` / `video`
+
+```yaml
+image:
+  layout: sub_media_dirs    # sub_media_dirs | flat
+  sidecar: yaml            # engine-defined sidecar format (optional)
+
+audio:
+  layout: sub_media_dirs
+  manifest: ./audio/manifest.yaml
+
+video:
+  layout: sub_media_dirs
+  reencode: false          # if true, CLI may re-encode on extract
+```
+
+The fields here are convention hints. Engines MAY ignore any of them.
+The full semantics are in
+[12-file-structure.md](./12-file-structure.md).
+
+### Engine-extension media
+
+For each engine-extension media identifier, the same block shape
+applies:
+
+```yaml
+font:
+  layout: sub_media_dirs
+  manifest: ./font/manifest.yaml
+```
+
+When the engine exposes `font` as a sub-media of an existing media,
+the configuration goes under that parent (see [04-media.md § Sub-Media](./04-media.md#sub-media)).
+
+---
+
+## 5.9 `engine`
 
 ```yaml
 engine:
@@ -205,7 +409,7 @@ Engine-extension media / sub-media are also configured under
 
 ---
 
-## 5.9 Reserved top-level keys
+## 5.10 Reserved top-level keys
 
 The following keys are reserved for future spec use and MUST NOT be
 used by engines today:
@@ -225,7 +429,7 @@ gcwp.*      # reserved for protocol-level options
 
 ---
 
-## 5.10 Path resolution
+## 5.11 Path resolution
 
 All relative paths inside `gallate.yaml` are resolved against the
 **Project Root** (the directory containing `gallate.yaml`):

@@ -202,7 +202,7 @@ tool -ea ./gallate.yaml
 引擎不必支持它已声明的每个媒体。纯文本引擎只声明 `text`;视觉小说声明 `text` + `image` + `audio` 但无 `video`。引擎在[协议层 features](../../protocol/03-discovery.md#features) 文档中记录支持的子集:
 
 ```yaml
-resources:
+media:
   text: true
   image: true
   audio: true

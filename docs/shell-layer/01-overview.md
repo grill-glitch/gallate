@@ -7,7 +7,7 @@
 
 ## 1.1 Unix Philosophy
 
-The gallate CLI focuses on resource handling:
+The gallate CLI focuses on media handling:
 
 ```text
 extract    (-e)

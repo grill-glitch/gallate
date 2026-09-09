@@ -9,7 +9,7 @@ description: Static capability description of a CLI.
 required:
   - type
   - operations
-  - resources
+  - media
   - validation
   - runtime
 
@@ -35,7 +35,11 @@ properties:
       repack:
         type: boolean
 
-  resources:
+  # NOTE: This top-level key was called `resources` in earlier drafts.
+  # Renamed to `media` to eliminate ambiguity with the per-resource
+  # notion used elsewhere (resource path, resource id, per-resource
+  # tree). Field semantics are unchanged.
+  media:
     type: object
     description: |
       Media support flags. Two media are part of the standard
@@ -62,12 +66,12 @@ properties:
         type: boolean
         description: |
           Engine-extension media. Only present when the engine
-          supports audio resources.
+          supports audio.
       video:
         type: boolean
         description: |
           Engine-extension media. Only present when the engine
-          supports video resources.
+          supports video.
 
   validation:
     type: object
