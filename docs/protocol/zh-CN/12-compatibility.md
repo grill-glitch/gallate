@@ -95,13 +95,17 @@ Wrapper 可在操作之间重新查 `features`,因为 CLI 能力可能变。
 兼容 CLI 更新时这些字段必须稳定:
 
 ```text
-CLI id              (manifest.id)
-Engine id           (manifest.engine.id)
-Operation 名        (request.operation 值)
-Feature 名          (features.* 键)
-Validation rule id  (rules[].id)
-Error code          (event.code 值)
+CLI id                      (manifest.id)
+Engine id                   (manifest.engine.id)
+Operation 名                (request.operation 值)
+Feature 名                  (features.* 键)
+Validation rule id          (rules[].id)
+Validation rule type        (rules[].type: regex | placeholder | constraint)
+Error code                  (event.code / response.code)
 ```
+
+**Validation rule type** 本身也是稳定标识符。新增 rule type 是 MINOR bump;
+复用或删除已有值是 MAJOR bump —— 见 [08-验证.md](./08-validation.md)。
 
 Wrapper 必须以这些值为键,**不**靠人类可读字符串。见 [09-诊断.md § Wrapper 规则](./09-diagnostics.md)。
 

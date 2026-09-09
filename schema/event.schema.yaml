@@ -85,31 +85,42 @@ properties:
       - info
       - warning
       - error
-    description: Severity (for `validation` / `error`).
+    description: |
+      Severity of an `error` or `warning` event, or of a `validation`
+      finding (see validation-result.schema.yaml for the full payload).
 
   rule:
     type: string
-    description: Validation rule id (for `validation` event).
+    description: |
+      Validation rule id (for `validation` events). MUST match a rule
+      the CLI declared in `cli validation --yaml`.
+      See validation-rules.schema.yaml for the declaration side.
 
   source:
     type: string
-    description: Source text (for `validation`).
+    description: |
+      Source text the finding refers to (for `validation` events).
+      See validation-result.schema.yaml for the full result payload.
 
   target:
     type: string
-    description: Target text (for `validation`).
+    description: |
+      Target text the finding refers to (for `validation` events).
+      See validation-result.schema.yaml for the full result payload.
 
+  # Location fields on validation events. Same shape as
+  # validation-result.schema.yaml. Wrapper MAY attach findings to
+  # XLIFF using translation_unit when present.
   file:
     type: string
-
   line:
     type: number
-
   offset:
     type: number
-
   length:
     type: number
+  translation_unit:
+    type: string
 
   statistics:
     type: object

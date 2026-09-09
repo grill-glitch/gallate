@@ -59,6 +59,65 @@ started_at: 2026-09-09T12:34:56Z
 | `current` | 可选 | 当前处理资源 / 文件 |
 | `started_at` | 可选 | ISO-8601 时间戳 |
 
+---
+
+## 状态在线缆上的形式
+
+Status **不是**事件流中的一项。它是**同步查询 / 应答**:
+
+```text
+Wrapper                          CLI
+   │                              │
+   │  ── status.yaml-stream ───▶  │   (单行,单文档)
+   │                              │   或单独的 `cli status --yaml`
+   │  ◀── single status doc ───  │   invocation
+   │                              │
+```
+
+两种等价传输方式,**任选其一**,不要在同一 CLI 会话里混用:
+
+### A. 内联状态流
+
+```yaml
+# Wrapper → CLI stdin (running 中任意时刻)
+{type: status-query, id: 01HSTATUS}
+
+# CLI → Wrapper stdout (单行,然后回到正常事件流)
+{type: status, state: running, operation: extract, phase: extracting, progress: {current: 72, total: 100}}
+```
+
+CLI 返回**恰好一条** status 文档,然后继续事件流。
+
+### B. 单独调用
+
+```bash
+# Wrapper 启一个单独 CLI 进程(或用 side-band fd),问:
+$ cli status --yaml
+```
+
+避免污染操作 stdin/stdout。Wrapper 在长操作频繁轮询时倾向此方式。
+
+### 线缆格式冲突解决
+
+> **Status 文档是 YAML,不是 JSON,不是 JSONL。**
+
+GCWP 全局规则适用(见 [02-核心协议.md § YAML Line Protocol](./02-core-protocol.md))。
+没有 JSON 形式。若 `cli status` 返回 JSON,即为 CLI 违反协议。
+
+---
+
+## 状态查询消息
+
+Schema:[`schema/status-query.schema.yaml`](../../schema/status-query.schema.yaml)。
+
+```yaml
+type: status-query
+id: 01HSTATUS
+```
+
+Wrapper 必须带 query id,CLI 必须把同一 id 在 `type: status` 应答里回显,
+便于 Wrapper 关联。
+
 ## State
 
 标准状态:

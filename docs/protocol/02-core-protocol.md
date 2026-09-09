@@ -103,9 +103,20 @@ See [12-compatibility.md](./12-compatibility.md) for full rules.
 | `command` | Wrapper → CLI | Out-of-band instruction (currently: `cancel`) |
 | `response` | CLI → Wrapper | Acknowledge a request and announce operation id |
 | `event` | CLI → Wrapper | One entry in the event stream |
-| `validation` | CLI → Wrapper | A validation finding during/after an operation |
+| `status` | CLI → Wrapper | Reply to a status query (see [06-status.md](./06-status.md)) |
+| `status-query` | Wrapper → CLI | Ask for a status snapshot mid-operation |
+| `validation-result` | CLI → Wrapper | A validation finding during/after an operation |
 
-All message types are defined as JSON Schemas under [`schema/`](../schema/).
+> **Note**: `validation-rules` is **not** a wire message — it is the
+> `type` field of the document returned by `cli validation --yaml`
+> during discovery. See
+> [validation-rules.schema.yaml](../schema/validation-rules.schema.yaml).
+> The wire-shape payload of validation findings is `event: validation`
+> with `severity` and `rule` fields; see
+> [validation-result.schema.yaml](../schema/validation-result.schema.yaml).
+
+All message types are defined as YAML Schema (JSON Schema draft-07
+semantics) under [`schema/`](../schema/).
 
 ---
 

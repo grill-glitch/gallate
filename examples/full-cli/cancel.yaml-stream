@@ -1,0 +1,51 @@
+# full-cli cancel.yaml-stream
+#
+# Trace of a CLI run that is interrupted by a Wrapper-initiated cancel.
+# Shows the complete cancel command round-trip:
+#   Wrapper → CLI  : type=command, command=cancel
+#   CLI    → Wrapper: type=event, event=cancelled, then exit code 6
+#
+# Demonstrates:
+#   - response.schema.yaml (with accepted=true)
+#   - cancel-command.schema.yaml
+#   - event.schema.yaml (event=cancelled)
+#   - the clean shutdown pattern
+
+# ----- stdin -----
+
+{type: request, id: 01HCANCEL, operation: build, input: [{path: ./demo-zh.pfs, kind: file}], output: [{path: ./dist, kind: directory}]}
+
+# ----- stdout: response -----
+
+{type: response, id: 01HCANCEL, operation: build, accepted: true}
+
+{type: event, event: started, id: 01HCANCEL, operation: build}
+
+{type: event, event: phase, name: preparing}
+{type: event, event: phase, name: scanning}
+{type: event, event: progress, current: 1, total: 100}
+{type: event, event: progress, current: 25, total: 100}
+
+# ----- stdin: Wrapper sends the cancel command -----
+
+{type: command, command: cancel, reason: "user pressed Esc in the Wrapper UI"}
+
+# ----- stdout: CLI begins graceful shutdown -----
+
+{type: event, event: phase, name: finalizing}
+
+# CLI SHOULD emit any pending file events for temp cleanup so the
+# Wrapper can show the user what got cleaned up.
+{type: event, event: file, action: delete, path: .gallate-tmp/build-01HCANCEL/intermediate.bin}
+
+# Terminal event MUST be `cancelled`.
+{type: event, event: cancelled, id: 01HCANCEL}
+
+# Optional: a statistics snapshot of the partial run.
+{type: event, event: statistics, statistics: {files: {scanned: 25, processed: 25, failed: 0}, text: {injected: 0}, output: {bytesWritten: 102400}, duration: 3.42}}
+
+# exit code 6 (cancelled)
+#
+# Note: the cancel command MUST be the only non-request stdin message.
+# After it, the CLI MUST NOT receive any further requests on the same
+# stdin — the Wrapper opens a fresh CLI process for the next operation.

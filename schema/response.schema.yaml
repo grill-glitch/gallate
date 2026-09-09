@@ -37,6 +37,20 @@ properties:
       refuses at this point (e.g. unsupported operation). On `false`,
       CLI follows with an error event and a non-zero exit.
 
+  code:
+    type: string
+    description: |
+      Stable error code, present when `accepted: false`. SAME code
+      space as event.code; see docs/protocol/09-diagnostics.md.
+    pattern: '^[A-Z][A-Z0-9_]+$'
+
+  reason:
+    type: string
+    description: |
+      Human-readable rejection reason, present when `accepted: false`.
+      MAY change between versions. Wrapper MUST NOT branch on `reason`;
+      branch on `code` instead.
+
   protocol:
     type: object
     description: Echoes the negotiated protocol version.

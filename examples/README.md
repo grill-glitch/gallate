@@ -14,23 +14,29 @@ as templates CLI authors can copy.
 examples/
 ├── README.md
 ├── minimal-cli/
-│   ├── manifest.yaml      what the CLI says it is
-│   ├── features.yaml      what the CLI claims it can do
-│   └── extract.jsonl      a single extract operation end-to-end
+│   ├── manifest.yaml             what the CLI says it is
+│   ├── features.yaml             what the CLI claims it can do
+│   └── extract.yaml-stream       a single extract operation end-to-end
 └── full-cli/
     ├── manifest.yaml
     ├── features.yaml
-    ├── validation.yaml    validation rules the CLI exposes
-    ├── extract.jsonl      full extract with progress + warnings
-    ├── inject.jsonl       full inject with validation findings
-    ├── build.jsonl        a complete build run
-    └── errors.jsonl       failure scenarios + error codes
+    ├── validation.yaml           validation rules the CLI exposes
+    ├── validation-result.yaml-stream  validation findings during an operation
+    ├── extract.yaml-stream       full extract with progress + warnings
+    ├── inject.yaml-stream        full inject with validation findings
+    ├── build.yaml-stream         a complete build run
+    ├── cancel.yaml-stream        cancellation mid-operation
+    └── errors.yaml-stream        failure scenarios + error codes
 ```
 
-`*.jsonl` is used here purely for trace legibility — each line is
-YAML, not JSON. The `.jsonl` extension is a convention to make
-streaming traces obvious to humans; CLI implementations SHOULD emit
-YAML on stdout regardless of filename.
+The `.yaml-stream` extension is a convention to make streaming traces
+obvious to humans; each line inside is YAML, **not** JSONL. CLI
+implementations SHOULD emit YAML on stdout regardless of filename.
+Use this extension to distinguish "streaming YAML" from "single YAML
+documents" (`.yaml`) and "JSON Schema" definitions (`*.schema.yaml`).
+
+If you see `.jsonl` anywhere in this repository it is a stale reference
+and should be filed as a bug.
 
 ---
 

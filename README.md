@@ -79,31 +79,35 @@ gallate/
 │       └── 13-conformance.md
 │
 ├── schema/
-│   ├── gcwp.schema.json
-│   ├── manifest.schema.json
-│   ├── features.schema.json
-│   ├── request.schema.json
-│   ├── response.schema.json
-│   ├── event.schema.json
-│   ├── status.schema.json
-│   ├── statistics.schema.json
-│   ├── validation.schema.json
-│   └── cancel-command.schema.json
+│   ├── gcwp.schema.yaml
+│   ├── manifest.schema.yaml
+│   ├── features.schema.yaml
+│   ├── request.schema.yaml
+│   ├── response.schema.yaml
+│   ├── event.schema.yaml
+│   ├── status.schema.yaml
+│   ├── status-query.schema.yaml
+│   ├── statistics.schema.yaml
+│   ├── validation-rules.schema.yaml
+│   ├── validation-result.schema.yaml
+│   └── cancel-command.schema.yaml
 │
-└── examples/
-    ├── README.md
-    ├── minimal-cli/
-    │   ├── manifest.yaml
-    │   ├── features.yaml
-    │   └── extract.jsonl
-    └── full-cli/
-        ├── manifest.yaml
-        ├── features.yaml
-        ├── validation.yaml
-        ├── extract.jsonl
-        ├── inject.jsonl
-        ├── build.jsonl
-        └── errors.jsonl
+examples/
+├── README.md
+├── minimal-cli/
+│   ├── manifest.yaml
+│   ├── features.yaml
+│   └── extract.yaml-stream
+└── full-cli/
+    ├── manifest.yaml
+    ├── features.yaml
+    ├── validation.yaml
+    ├── validation-result.yaml-stream
+    ├── extract.yaml-stream
+    ├── inject.yaml-stream
+    ├── build.yaml-stream
+    ├── cancel.yaml-stream
+    └── errors.yaml-stream
 ```
 
 ---
@@ -111,15 +115,15 @@ gallate/
 ## Relationship between layers
 
 ```text
-Markdown   → explains  "why / how it is designed"
-JSON Schema → enforces  "exactly what shape it must be"
-Examples    → demonstrates "a complete working slice"
+Markdown        → explains   "why / how it is designed"
+YAML Schemas    → enforces   "exactly what shape it must be"
+Examples        → demonstrates "a complete working slice"
 ```
 
 | Artifact | Author reads… | Author writes… |
 | --- | --- | --- |
 | Markdown spec | to understand intent | corrections via PR |
-| JSON Schema | to know field requirements | type bindings / codegen |
+| YAML Schemas (JSON Schema semantics) | to know field requirements | type bindings / codegen |
 | Examples | to see end-to-end behavior | copies as a starting template |
 
 ---

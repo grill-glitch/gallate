@@ -9,6 +9,48 @@ for the **protocol version** (MAJOR.MINOR), not for the specification document.
 
 ---
 
+## [1.0.1] — 2026-09-09 — Draft (hotfix)
+
+### Fixed
+
+- Renamed all streaming-trace file extensions from `.jsonl` to
+  `.yaml-stream` to remove any JSON/JAML confusion.
+- Split the single `validation.schema.yaml` into two:
+  - `validation-rules.schema.yaml` — the document CLI returns from
+    `cli validation --yaml` (type=`validation-rules`).
+  - `validation-result.schema.yaml` — the payload shape of a single
+    finding inside an `event: validation` (type=`validation-result`).
+  This resolves an ambiguity where `validation` was used both as a
+  wire message type and as the document type of the rules list.
+- Added `status-query.schema.yaml` (type=`status-query`) — the
+  synchronous question Wrapper sends when polling `cli status --yaml`
+  inline. Added a new `06-status.md` section "Status on the wire"
+  describing both inline and dedicated transports.
+- `response.schema.yaml` now includes `code` and `reason` fields
+  so the Wrapper can classify `accepted: false` responses with the
+  same stable-code semantics used for events.
+- `examples/full-cli/validation.yaml` now includes `info` and
+  `warning`-severity rule examples (previously only `error`).
+- `examples/full-cli/errors.yaml-stream` shows the
+  `response, accepted: false, code, reason` shape for rejections,
+  plus a `cancel refused` and `validation failed` variant.
+- New examples: `validation-result.yaml-stream` and
+  `cancel.yaml-stream`.
+- `02-core-protocol.md` Message types table now lists `status` and
+  `status-query` distinctly, and explains that `validation-rules` is
+  discovery-only (not a wire message).
+- `12-compatibility.md` adds `Validation rule type` to the list of
+  stable identifiers.
+
+### Notes
+
+- The wire format itself is unchanged. This release only renames
+  files, adds schemas, and improves documentation.
+- See `docs/protocol/06-status.md` for the new "Status on the wire"
+  section.
+
+---
+
 ## [1.0] — 2026-09-09 — Draft
 
 ### Added

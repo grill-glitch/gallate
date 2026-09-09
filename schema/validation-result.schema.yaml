@@ -1,0 +1,85 @@
+# Validation Result schema — shape of a single validation finding.
+#
+# This is what the Wrapper forwards to OmegaT's validator when it sees
+# `event: validation` on stdout. It is the *result* side of validation;
+# see validation-rules.schema.yaml for the *declaration* side.
+#
+# Validation findings ride inside the event stream, so the wrapper
+#envelope is defined by event.schema.yaml. This file pins the payload
+#fields (source / target / rule / severity / location / message).
+#
+# See docs/protocol/08-validation.md § Validation Result.
+
+$schema: https://json-schema.org/draft-07/schema#
+$id: https://github.com/grill-glitch/gallate/schema/validation-result.schema.yaml
+title: ValidationResult
+description: |
+  A single validation finding. Embedded inside an `event: validation`
+  envelope (see event.schema.yaml). The fields below describe the
+  payload — `event`, `id`, `operation`, etc. live in the envelope.
+
+required:
+  - rule
+  - severity
+
+properties:
+  rule:
+    type: string
+    description: |
+      Rule id from validation-rules.schema.yaml.
+      MUST match a rule the CLI declared in `cli validation --yaml`,
+      unless the CLI is reporting a synthesized finding (rare).
+    pattern: '^[a-z][a-z0-9-]+$'
+
+  severity:
+    type: string
+    enum:
+      - info
+      - warning
+      - error
+
+  source:
+    type: string
+    description: Source text the finding refers to.
+
+  target:
+    type: string
+    description: Target text the finding refers to.
+
+  message:
+    type: string
+    description: Human-readable finding message.
+
+  # Location — all optional, but at least one of `path` / `file` /
+  # `translation_unit` SHOULD be present so the Wrapper can route the
+  # finding back into XLIFF.
+  path:
+    type: string
+    description: Resource path the finding refers to.
+  file:
+    type: string
+    description: Source file (when different from path).
+  line:
+    type: number
+  offset:
+    type: number
+  length:
+    type: number
+  resource:
+    type: string
+    description: Logical resource id (engine-defined).
+  translation_unit:
+    type: string
+    description: |
+      XLIFF `<unit id="...">` the finding should be attached to.
+      When set, Wrapper MAY skip path/line and attach by unit id.
+
+  # Optional structured context (engine-specific).
+  details:
+    type: object
+    description: |
+      Free-form additional context. Wrapper MUST ignore unknown keys
+      inside `details`.
+    additionalProperties: true
+
+additionalProperties: true

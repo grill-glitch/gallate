@@ -1,8 +1,15 @@
-# Validation rules schema — returned by `cli validation --yaml`.
+# Validation Rules schema — returned by `cli validation --yaml`.
+#
+# Distinct from `validation-result.schema.yaml`:
+#   * validation-rules.schema.yaml  → CLI's static declaration of rules.
+#     type=validation-rules, returned once per CLI capability discovery.
+#   * validation-result.schema.yaml → CLI's per-finding result emitted in
+#     the event stream. type=validation-result (see event.schema.yaml).
+#
 # See docs/protocol/08-validation.md.
 
 $schema: https://json-schema.org/draft-07/schema#
-$id: https://github.com/grill-glitch/gallate/schema/validation.schema.yaml
+$id: https://github.com/grill-glitch/gallate/schema/validation-rules.schema.yaml
 title: ValidationRules
 description: |
   A document containing engine-specific validation rules. CLI returns
@@ -15,7 +22,7 @@ required:
 properties:
   type:
     type: string
-    const: validation
+    const: validation-rules
 
   rules:
     type: array
@@ -29,14 +36,23 @@ properties:
       properties:
         id:
           type: string
-          description: Stable rule id (kebab-case recommended).
+          description: |
+            Stable rule id (kebab-case recommended).
+            MUST remain stable across CLI updates; see
+            docs/protocol/12-compatibility.md.
           pattern: '^[a-z][a-z0-9-]+$'
+
         type:
           type: string
+          description: |
+            Rule type. This is a stable identifier — adding new values
+            is a MINOR protocol bump; repurposing an existing value is a
+            MAJOR protocol bump.
           enum:
             - regex
             - placeholder
             - constraint
+
         scope:
           type: string
           enum:
@@ -46,23 +62,32 @@ properties:
             - placeholder
             - metadata
             - resource
+
         severity:
           type: string
+          description: |
+            Default severity for findings from this rule. Validators MAY
+            downgrade based on user preferences, but MUST NOT silently
+            upgrade `info` to `error`.
           enum:
             - info
             - warning
             - error
+
         pattern:
           type: string
           description: Regex / placeholder pattern (engine-defined flavor).
+
         flags:
           type: array
           items:
             type: string
           description: Regex flags (engine-defined).
+
         preserve:
           type: boolean
           description: Whether the matched region MUST appear unchanged in target.
+
         constraint:
           type: object
           description: Constraint parameters (for type=constraint).
@@ -76,12 +101,15 @@ properties:
             noLineBreak:
               type: boolean
           additionalProperties: true
+
         message:
           type: string
           description: Custom message override.
+
         description:
           type: string
           description: Human-readable explanation of the rule.
+
       additionalProperties: true
 
 additionalProperties: true

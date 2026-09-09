@@ -1,7 +1,7 @@
 # full-cli validation rules
 # Returned by: full-cli validation --yaml
 
-type: validation
+type: validation-rules
 
 rules:
 
@@ -41,6 +41,16 @@ rules:
     description: |
       Warns when a single line exceeds the engine's textbox width.
 
+  - id: suspect-double-space
+    type: regex
+    scope: target
+    pattern: "  +"
+    flags: []
+    severity: warning
+    description: |
+      Detects accidental double-spaces in the translation target.
+      Common after copy-paste from a PDF or web page.
+
   - id: max-target-bytes
     type: constraint
     scope: target
@@ -50,3 +60,24 @@ rules:
     description: |
       Translation targets must fit within the engine's per-string
       byte budget after UTF-8 encoding.
+
+  - id: ruby-annotation-present
+    type: regex
+    scope: source
+    pattern: "\\{ruby:[^}]+\\}"
+    flags: []
+    severity: info
+    description: |
+      Informational: source contains a ruby annotation. The Wrapper
+      surfaces this in OmegaT so the translator knows to decide whether
+      the target also needs a ruby annotation. Does not block.
+
+  - id: terminator-punctuation
+    type: regex
+    scope: target
+    pattern: "[.!?。！？]$"
+    flags: []
+    severity: info
+    description: |
+      Informational: target text does not end with sentence-ending
+      punctuation. Reviewer should verify this is intentional.

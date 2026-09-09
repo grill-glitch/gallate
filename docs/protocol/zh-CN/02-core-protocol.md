@@ -80,9 +80,18 @@ version: 1.0
 | `command` | Wrapper → CLI | 带外指令(当前只有 `cancel`) |
 | `response` | CLI → Wrapper | 确认请求并通告操作 ID |
 | `event` | CLI → Wrapper | 事件流的一项 |
-| `validation` | CLI → Wrapper | 操作中或操作后的验证发现 |
+| `status` | CLI → Wrapper | 对状态查询的应答(见 [06-状态.md](./06-status.md)) |
+| `status-query` | Wrapper → CLI | 操作中请求状态快照 |
+| `validation-result` | CLI → Wrapper | 操作中或操作后的验证发现 |
 
-所有消息类型由 [`schema/`](../../schema/) 下的 JSON Schema 定义。
+> **注意**:`validation-rules` **不是**线缆消息 —— 它是 `cli validation --yaml`
+> 在发现阶段返回文档的 `type` 字段。详见
+> [validation-rules.schema.yaml](../../schema/validation-rules.schema.yaml)。
+> 线缆上的 payload形状是 `event: validation`,带 `severity` 与 `rule` 字段;
+> 详见 [validation-result.schema.yaml](../../schema/validation-result.schema.yaml)。
+
+所有消息类型由 [`schema/`](../../schema/) 下的 YAML Schema(JSON Schema
+draft-07 语义)定义。
 
 ## 操作流(骨架)
 

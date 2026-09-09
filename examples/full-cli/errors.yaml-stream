@@ -1,26 +1,25 @@
-# full-cli errors.jsonl
+# full-cli errors.yaml-stream
 #
 # Traces showing how the CLI reports different classes of failure.
 # Each block ends with an exit code. Wrapper MUST key off `code`,
-# not `message`.
+# not `message` / `reason`.
 
 # === A) Unsupported operation ===
-
+#
 # Wrapper sends:
 #   {type: request, id: 01HOP, operation: demux}
+#
+# CLI responds with `accepted: false` and a stable code:
 
-# CLI responds:
-{type: response, id: 01HOP, operation: demux, accepted: false}
-{type: event, event: error, code: UNSUPPORTED_OPERATION, message: "Operation 'demux' is not implemented by this CLI"}
+{type: response, id: 01HOP, operation: demux, accepted: false, code: UNSUPPORTED_OPERATION, reason: "Operation 'demux' is not implemented by this CLI"}
 
 # CLI exits with code 4.
 
 # === B) Invalid input ===
-
+#
 # Wrapper sends:
 #   {type: request, id: 01HINPUT, operation: extract, input: [{path: ./missing.pfs, kind: file}]}
 
-# CLI responds:
 {type: response, id: 01HINPUT, operation: extract, accepted: true}
 {type: event, event: started, id: 01HINPUT, operation: extract}
 {type: event, event: error, code: FILE_NOT_FOUND, message: "Input file does not exist", path: ./missing.pfs}
@@ -28,11 +27,10 @@
 # CLI exits with code 1.
 
 # === C) Archive corrupted ===
-
+#
 # Wrapper sends:
 #   {type: request, id: 01HCORRUPT, operation: extract, input: [{path: ./broken.pfs, kind: file}]}
 
-# CLI responds:
 {type: response, id: 01HCORRUPT, operation: extract, accepted: true}
 {type: event, event: started, id: 01HCORRUPT, operation: extract}
 {type: event, event: phase, name: scanning}
@@ -41,22 +39,40 @@
 # CLI exits with code 1.
 
 # === D) Protocol violation by Wrapper (CLI defends) ===
-
+#
 # Wrapper sends garbage over stdin:
 #   {this is not a valid GCWP message
 
-# CLI responds:
 {type: event, event: error, code: PROTOCOL_ERROR, message: "Cannot parse request message"}
 
 # CLI exits with code 7.
 
 # === E) Unsupported configuration ===
-
+#
 # Wrapper sends:
 #   {type: request, id: 01HCFG, operation: extract, input: [{path: ./game.pfs, kind: file}], options: {demo_engine.unknown_option: true}}
 
-# CLI responds:
-{type: response, id: 01HCFG, operation: extract, accepted: false}
-{type: event, event: error, code: INVALID_CONFIG, message: "Unknown option demo_engine.unknown_option", path: ./game.pfs}
+{type: response, id: 01HCFG, operation: extract, accepted: false, code: INVALID_CONFIG, reason: "Unknown option demo_engine.unknown_option", path: ./game.pfs}
 
 # CLI exits with code 3.
+
+# === F) Cancellation refused (CLI cannot stop safely right now) ===
+#
+# This is unusual — Full-tier CLIs MUST support cancel — but Standard-tier
+# CLIs that advertise `features.runtime.cancellation: false` may respond
+# this way.
+
+{type: response, id: 01HNOCANCEL, operation: build, accepted: false, code: UNSUPPORTED_OPERATION, reason: "This CLI does not support cancellation"}
+
+# CLI exits with code 4.
+
+# === G) Validation failed (blocking) ===
+#
+# Validation findings are emitted as events; the terminal event is
+# `completed` and the exit code is 5 if any blocking-severity findings
+# were emitted.
+
+{type: event, event: validation, rule: player-name, severity: error, source: "Hello {player}", target: "你好", message: "Required placeholder is missing: {player}"}
+{type: event, event: completed, id: 01HVALFAIL}
+
+# CLI exits with code 5.

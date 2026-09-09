@@ -73,31 +73,35 @@ gallate/
 │       └── 13-conformance.md
 │
 ├── schema/
-│   ├── gcwp.schema.json
-│   ├── manifest.schema.json
-│   ├── features.schema.json
-│   ├── request.schema.json
-│   ├── response.schema.json
-│   ├── event.schema.json
-│   ├── status.schema.json
-│   ├── statistics.schema.json
-│   ├── validation.schema.json
-│   └── cancel-command.schema.json
+│   ├── gcwp.schema.yaml
+│   ├── manifest.schema.yaml
+│   ├── features.schema.yaml
+│   ├── request.schema.yaml
+│   ├── response.schema.yaml
+│   ├── event.schema.yaml
+│   ├── status.schema.yaml
+│   ├── status-query.schema.yaml
+│   ├── statistics.schema.yaml
+│   ├── validation-rules.schema.yaml
+│   ├── validation-result.schema.yaml
+│   └── cancel-command.schema.yaml
 │
 └── examples/
     ├── README.md
     ├── minimal-cli/
     │   ├── manifest.yaml
     │   ├── features.yaml
-    │   └── extract.jsonl
+    │   └── extract.yaml-stream
     └── full-cli/
         ├── manifest.yaml
         ├── features.yaml
         ├── validation.yaml
-        ├── extract.jsonl
-        ├── inject.jsonl
-        ├── build.jsonl
-        └── errors.jsonl
+        ├── validation-result.yaml-stream
+        ├── extract.yaml-stream
+        ├── inject.yaml-stream
+        ├── build.yaml-stream
+        ├── cancel.yaml-stream
+        └── errors.yaml-stream
 ```
 
 ---
@@ -105,15 +109,15 @@ gallate/
 ## 三类文档的关系
 
 ```text
-Markdown    → 解释  "为什么这样设计 / 怎么设计"
-JSON Schema → 规定  "到底必须长什么样"
-Examples    → 示范  "一段完整可运行的范例"
+Markdown        → 解释  "为什么这样设计 / 怎么设计"
+YAML Schemas    → 规定  "到底必须长什么样"
+Examples        → 示范  "一段完整可运行的范例"
 ```
 
 | 制品 | 作者读…… | 作者写…… |
 | --- | --- | --- |
 | Markdown 规范 | 理解设计意图 | 通过 PR 提建议 |
-| JSON Schema | 了解字段要求 | 生成类型 / 代码 |
+| YAML Schemas(JSON Schema 语义) | 了解字段要求 | 生成类型 / 代码 |
 | Examples | 看完整行为 | 复制作为模板 |
 
 ---

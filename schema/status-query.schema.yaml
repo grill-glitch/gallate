@@ -1,0 +1,30 @@
+# Status Query schema — sent by Wrapper over stdin mid-operation.
+#
+# Distinct from status.schema.yaml:
+#   * status-query.schema.yaml  → the question (this file). type=status-query.
+#   * status.schema.yaml       → the answer. type=status.
+#
+# See docs/protocol/06-status.md § Status on the wire.
+
+$schema: https://json-schema.org/draft-07/schema#
+$id: https://github.com/grill-glitch/gallate/schema/status-query.schema.yaml
+title: StatusQuery
+description: Asks the CLI for a state snapshot.
+
+required:
+  - type
+  - id
+
+properties:
+  type:
+    type: string
+    const: status-query
+
+  id:
+    type: string
+    description: |
+      Query correlation id. The CLI MUST echo this id back in its
+      `type: status` response so the Wrapper can correlate.
+    pattern: '^[A-Za-z0-9_-]+$'
+
+additionalProperties: true

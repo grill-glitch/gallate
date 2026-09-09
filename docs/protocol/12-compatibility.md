@@ -119,13 +119,19 @@ has changed.
 These fields MUST remain stable across compatible CLI updates:
 
 ```text
-CLI id              (manifest.id)
-Engine id           (manifest.engine.id)
-Operation names     (request.operation values)
-Feature names       (features.* keys)
-Validation rule id  (rules[].id)
-Error code          (event.code values)
+CLI id                      (manifest.id)
+Engine id                   (manifest.engine.id)
+Operation names             (request.operation values)
+Feature names               (features.* keys)
+Validation rule id          (rules[].id)
+Validation rule type        (rules[].type: regex | placeholder | constraint)
+Error code                  (event.code / response.code)
 ```
+
+The **validation rule type** is itself a stable identifier. Adding new
+rule types is a MINOR protocol bump; repurposing or removing an
+existing value is a MAJOR protocol bump — see
+[08-validation.md](./08-validation.md).
 
 Wrapper MUST key off these values, never the human-readable strings.
 See [12 § Error Code vs Message](./09-diagnostics.md#wrapper-rule).
