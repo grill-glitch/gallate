@@ -1,0 +1,176 @@
+# Project Metadata schema — written by the CLI to project root
+# as `.meta.json`. Distinct from gallate.yaml (intent) and from
+# manifest.schema.yaml (CLI identity). See
+# docs/shell-layer/13-meta-json.md for the full design.
+
+$schema: https://json-schema.org/draft-07/schema#
+$id: https://github.com/grill-glitch/gallate/schema/meta.schema.yaml
+title: ProjectMetadata
+description: |
+  Project-level state file written and maintained by the gallate
+  CLI. Records the actual mapping between project files (under the
+  Project Root) and the original game resources from which they
+  were extracted.
+
+required:
+  - schema_version
+  - generated_by
+  - generated_at
+  - project
+  - files
+
+properties:
+  schema_version:
+    type: integer
+    const: 1
+    description: |
+      Schema version of this file. Bumped when the standard adds
+      new required fields or restructures the document. The CLI
+      refuses to load a `.meta.json` whose `schema_version` is
+      higher than the CLI knows.
+
+  generated_by:
+    type: object
+    description: |
+      Which CLI wrote this file. Used for ownership / namespace
+      arbitration when multiple CLIs share a project. See
+      [13-meta-json.md § 10 CLI ownership](../docs/shell-layer/13-meta-json.md).
+    required:
+      - id
+      - version
+    properties:
+      id:
+        type: string
+        description: Stable CLI id (matches `manifest.id`).
+        pattern: '^[a-z][a-z0-9-]+$'
+      version:
+        type: string
+        description: CLI semantic version.
+    additionalProperties: true
+
+  generated_at:
+    type: string
+    format: date-time
+    description: ISO-8601 timestamp of last successful rewrite.
+
+  project:
+    type: object
+    description: |
+      Identity of the project. Matches `gallate.yaml` location
+      but is not derived from it — the CLI sets these fields from
+      what it actually observed.
+    properties:
+      root:
+        type: string
+        description: Project Root path (where gallate.yaml lives).
+      cli_version_target:
+        type: string
+        description: |
+          Engine version string the project targets. Captured from
+          the engine output if available.
+    additionalProperties: true
+
+  files:
+    type: array
+    description: |
+      Mapping entries, one per project file the CLI manages.
+      Order is not significant. The CLI writes one entry per
+      project file; a project file that maps to multiple source
+      resources is represented as multiple `files[]` entries
+      sharing the same `project` field.
+    items:
+      type: object
+      required:
+        - project
+        - source
+        - type
+      properties:
+        project:
+          type: string
+          description: |
+            Path to the project file, **relative to the Project
+            Root**. Stable across runs; the CLI MUST NOT silently
+            rewrite this path.
+        source:
+          type: string
+          description: |
+            Path to the original game resource (engine-defined
+            logical path inside the game archive, or filesystem
+            path for unpacked games). Used as the source argument
+            of `inject`.
+        type:
+          type: string
+          enum:
+            - text
+            - image
+            - audio
+            - video
+            - font
+            - engine-extension
+          description: |
+            Resource type. Standard media use the standard
+            identifiers. Engine-extension media use the engine
+            namespace; the literal string `engine-extension` is
+            used when the type is not a standard media identifier.
+        hash:
+          type: string
+          description: |
+            Content hash of the project file (algorithm namespaced,
+            e.g. `sha256:abc123...`). Optional but recommended.
+        size:
+          type: number
+          description: Project file size in bytes at last write.
+        cli:
+          type: object
+          description: |
+            CLI that last wrote this entry. Same shape as the
+            top-level `generated_by`.
+          properties:
+            id:
+              type: string
+            version:
+              type: string
+          additionalProperties: true
+        engine:
+          type: object
+          description: |
+            Engine metadata. `id` matches `manifest.engine.id`;
+            `version` is the engine version this entry targets.
+          properties:
+            id:
+              type: string
+            version:
+              type: string
+          additionalProperties: true
+        resource_id:
+          type: string
+          description: |
+            Engine-internal logical id (e.g. entry name in a
+            resource table). May be empty for unpacked games.
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO-8601 timestamp of last write of this entry.
+        encoding:
+          type: string
+          description: |
+            Text encoding of the project file, when applicable
+            (e.g. `utf-8`, `shift-jis`). Engine-defined.
+        sub_media:
+          type: string
+          description: |
+            Sub-Media identifier (e.g. `dialog`, `portrait_diff`).
+            Omitted when the project file does not belong to a
+            Sub-Media category.
+        # Namespaced extension fields live under a single key per
+        # CLI. The CLI MUST NOT add new top-level fields; engines
+        # that need more room use `extensions.<cli-id>.*`.
+        extensions:
+          type: object
+          description: |
+            Namespaced extension fields, one namespace per CLI.
+            Keys under each namespace are engine-defined.
+          additionalProperties: true
+      additionalProperties: true
+
+additionalProperties: true

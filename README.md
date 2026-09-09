@@ -92,6 +92,12 @@ translation software" that everyone has to fork.
 | --- | --- | --- |
 | **GCWP** (Gamelate CLI–Wrapper Protocol) | Process / IPC layer | Wrapper & CLI implementers |
 | **`gallate.yaml`** specification | Shell / project-config layer | CLI authors & end users |
+| **`.meta.json`** (Derived Project Metadata) | Project state | CLIs (writer), Wrappers (reader) |
+
+`gallate.yaml` is **intent** — what the project should do. `.meta.json`
+is **state** — what the project actually did. The two are
+complementary, not interchangeable. See
+[docs/shell-layer/13-meta-json.md](./docs/shell-layer/13-meta-json.md).
 
 The **GCWP** sits under [`docs/protocol/`](./docs/protocol/). The
 **Shell-layer specification** sits under
@@ -183,9 +189,11 @@ gallate/
     ├── README.md
     ├── minimal-project/
     │   ├── gallate.yaml
+    │   ├── .meta.json
     │   ├── text/  image/
     └── full-project/
         ├── gallate.yaml
+        ├── .meta.json
         ├── engine-options.md
         ├── text/  image/  audio/  video/  font/
         └── scripts/

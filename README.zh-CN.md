@@ -81,6 +81,11 @@
 | --- | --- | --- |
 | **GCWP**(Gamelate CLI–Wrapper Protocol) | 进程 / IPC 层 | Wrapper 与 CLI 实现者 |
 | **`gallate.yaml`** 规范 | Shell / 项目配置层 | CLI 作者与终端用户 |
+| **`.meta.json`**(派生项目元数据) | 项目状态 | CLI(写) / Wrapper(读) |
+
+`gallate.yaml` 是**意图** —— 项目"应该"做什么;`.meta.json` 是**状态** ——
+项目"实际"做了什么。两者互补,不可互换。见
+[docs/shell-layer/13-meta-json.md](./docs/shell-layer/13-meta-json.md)。
 
 **GCWP** 位于 [`docs/protocol/`](./docs/protocol/)。**Shell 层规范**
 位于 [`docs/shell-layer/`](./docs/shell-layer/),覆盖 CLI 语法、项目
@@ -170,9 +175,11 @@ gallate/
     ├── README.md
     ├── minimal-project/
     │   ├── gallate.yaml
+    │   ├── .meta.json
     │   ├── text/  image/
     └── full-project/
         ├── gallate.yaml
+        ├── .meta.json
         ├── engine-options.md
         ├── text/  image/  audio/  video/  font/
         └── scripts/

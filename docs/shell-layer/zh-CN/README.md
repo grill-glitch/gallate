@@ -25,6 +25,7 @@
 | 10 | [stdout/stderr 与退出码](./10-stdout-stderr.md) | stdout vs stderr, 退出码表 |
 | 11 | [一致性](./11-conformance.md) | "兼容 Shell 层" 的语义 |
 | 12 | [文件结构](./12-file-structure.md) | `text/`、`image/` 等目录里文件如何组织 |
+| 13 | [项目元数据 `.meta.json`](./13-meta-json.md) | CLI 的项目级状态文件(与 `gallate.yaml` 分层) |
 
 ---
 

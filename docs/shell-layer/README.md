@@ -69,6 +69,7 @@ is what the user invokes directly; the GCWP layer is what a Wrapper
 | 10 | [Standard Output & Exit Codes](./10-stdout-stderr.md) | stdout vs stderr, exit code table |
 | 11 | [Conformance](./11-conformance.md) | What "compatible with Shell layer" means |
 | 12 | [File Structure](./12-file-structure.md) | What lives inside `text/`, `image/`, etc. |
+| 13 | [Project Metadata `.meta.json`](./13-meta-json.md) | The CLI's project-level state file (intentionally separate from `gallate.yaml`) |
 
 Chinese translations: [`zh-CN/`](./zh-CN/)
 

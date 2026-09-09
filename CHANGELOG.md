@@ -230,3 +230,47 @@ Affected files:
 - `README.md` and `README.zh-CN.md` (no body change needed; the
   repository tree already says `*.jsonl` for traces and
   `*.schema.yaml` for schema definitions).
+
+### Project Metadata: `.meta.json` (Derived Project State)
+
+A new project-level state file that the gallate CLI writes and
+maintains next to `gallate.yaml`.
+
+- `.meta.json` is **derived state**, not config. `gallate.yaml`
+  is **intent** (what the project should do); `.meta.json` records
+  **what the project actually did**.
+- Schema: `schema/meta.schema.yaml` with `schema_version: 1`.
+  Required fields: `schema_version`, `generated_by`, `generated_at`,
+  `project`, `files[]`. Optional: `hash`, `size`, `cli`, `engine`,
+  `resource_id`, `timestamp`, `encoding`, `sub_media`, `extensions`.
+- `files[].project` and `files[].source` are required and explicit;
+  the CLI MUST NOT infer mappings from filenames or directory
+  names.
+- Extension fields live under `files[].extensions.<cli-id>` so
+  multiple CLIs can share a project without collisions.
+- The CLI MUST update `.meta.json` atomically on every operation
+  that creates, modifies, moves, or deletes a project file.
+- The CLI MUST NOT silently ignore drift between `.meta.json` and
+  the actual project state; the recovery behavior is
+  operation-defined, but never silent corruption.
+- The Wrapper MAY read `.meta.json` to display resources, but
+  MUST NOT re-derive mappings on its own.
+
+Affected files:
+
+- `docs/shell-layer/13-meta-json.md` and its Chinese translation —
+  full normative chapter covering design, file location, generation,
+  mapping model, stability, lifecycle, update rules, consistency,
+  atomicity, CLI ownership, Wrapper responsibility, relation to
+  `gallate.yaml`, user visibility, and specification scope.
+- `schema/meta.schema.yaml` — new file.
+- `docs/shell-layer/README.md` and its Chinese translation —
+  index updated to include chapter 13.
+- `shell-layer-examples/minimal-project/.meta.json` — minimal
+  one-entry example.
+- `shell-layer-examples/full-project/.meta.json` — full multi-entry
+  example showing text / image / hardcoded, with a sub-Media
+  context block on the hardcoded entry.
+- `shell-layer-examples/README.md` — tree updated.
+- `README.md` and `README.zh-CN.md` — `.meta.json` added to the
+  contract table and the repository tree.

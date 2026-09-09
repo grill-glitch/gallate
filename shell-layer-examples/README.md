@@ -17,10 +17,12 @@ shell-layer-examples/
 ├── README.md
 ├── minimal-project/
 │   ├── gallate.yaml              # created by `init` with -i -o --media text
+│   ├── .meta.json                # CLI-maintained project state
 │   ├── text/                     # empty placeholder; engine will populate on -e
 │   └── image/                    # empty placeholder
 └── full-project/
     ├── gallate.yaml              # full configuration with engine options
+    ├── .meta.json                # CLI-maintained project state (intentionally separate from gallate.yaml)
     ├── text/  image/
     ├── audio/  video/  font/    # engine-extension directories (empty)
     ├── scripts/
@@ -28,6 +30,9 @@ shell-layer-examples/
     │   └── repack.py             # post script
     └── engine-options.md         # what --engine.* keys this CLI accepts
 ```
+
+See [`docs/shell-layer/13-meta-json.md`](../docs/shell-layer/13-meta-json.md)
+for the `.meta.json` design.
 
 ---
 

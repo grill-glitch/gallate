@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "generated_by": {
+    "id": "full",
+    "version": "1.0.0"
+  },
+  "generated_at": "2026-09-09T12:34:56Z",
+  "project": {
+    "root": ".",
+    "cli_version_target": "2.1"
+  },
+  "files": [
+    {
+      "project": "text/units/scenes_intro.xlf",
+      "source": "scenes/intro.bin",
+      "type": "text",
+      "cli": {"id": "full", "version": "1.0.0"},
+      "engine": {"id": "demo-engine", "version": "2.1"},
+      "sub_media": "dialog",
+      "encoding": "utf-8",
+      "hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "size": 1024,
+      "timestamp": "2026-09-09T12:34:56Z"
+    },
+    {
+      "project": "text/units/scenes_day1_scene_001.xlf",
+      "source": "scenes/day1/scene_001.bin",
+      "type": "text",
+      "cli": {"id": "full", "version": "1.0.0"},
+      "engine": {"id": "demo-engine", "version": "2.1"},
+      "sub_media": "dialog",
+      "timestamp": "2026-09-09T12:34:56Z"
+    },
+    {
+      "project": "image/bg/scenes_day1_scene_001_bg.png",
+      "source": "scenes/day1/scene_001.bin#bg",
+      "type": "image",
+      "cli": {"id": "full", "version": "1.0.0"},
+      "engine": {"id": "demo-engine", "version": "2.1"},
+      "sub_media": "background",
+      "timestamp": "2026-09-09T12:34:56Z"
+    },
+    {
+      "project": "image/portrait/character_alice_default.png",
+      "source": "characters/alice.portrait",
+      "type": "image",
+      "cli": {"id": "full", "version": "1.0.0"},
+      "engine": {"id": "demo-engine", "version": "2.1"},
+      "sub_media": "portrait",
+      "timestamp": "2026-09-09T12:34:56Z"
+    },
+    {
+      "project": "text/units/scenes_day1_scene_001_hardcoded.xlf",
+      "source": "scenes/day1/scene_001.rpy",
+      "type": "text",
+      "cli": {"id": "full", "version": "1.0.0"},
+      "engine": {"id": "demo-engine", "version": "2.1"},
+      "sub_media": "hardcoded",
+      "context": {
+        "file": "scenes/day1/scene_001.rpy",
+        "line": 42,
+        "end_line": 44,
+        "snippet": "41 │     if player.gender == \"male\":\n42 │         narrator(\"Hello {player}.\")\n43 │     else:"
+      },
+      "extensions": {
+        "full": {
+          "source_format": "rpy",
+          "context_lines": 3
+        }
+      },
+      "timestamp": "2026-09-09T12:34:56Z"
+    }
+  ]
+}
