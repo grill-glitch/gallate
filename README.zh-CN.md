@@ -143,6 +143,7 @@ gallate/
 │   ├── statistics.schema.yaml
 │   ├── validation-rules.schema.yaml
 │   ├── validation-result.schema.yaml
+│   ├── identify.schema.yaml
 │   └── cancel-command.schema.yaml
 │
 ├── examples/                    # GCWP IPC trace
@@ -160,6 +161,7 @@ gallate/
 │       ├── inject.yaml-stream
 │       ├── build.yaml-stream
 │       ├── cancel.yaml-stream
+│       ├── identify.yaml-stream
 │       └── errors.yaml-stream
 │
 └── shell-layer-examples/        # 项目树示例

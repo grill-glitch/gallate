@@ -64,4 +64,108 @@ properties:
         items:
           type: string
 
+  # Engine-recognition metadata: tells Wrapper which game files /
+  # directories this CLI can recognize. Used by the Wrapper to pick
+  # the right CLI before invoking `cli identify <path>`.
+  targets:
+    type: object
+    description: |
+      What games and file shapes this CLI can recognize. Wrapper
+      reads this to triage a candidate game to the right CLI; the
+      CLI itself verifies with `cli identify <path>` before
+      extract/inject.
+    properties:
+      games:
+        type: array
+        description: |
+          Specific games this CLI can recognize. Engines that are
+          purely generic (e.g. PO-file tools) MAY leave this empty.
+        items:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              description: Human-readable game title.
+            engine_versions:
+              type: array
+              description: Which engine versions this game ships with.
+              items:
+                type: string
+            ids:
+              type: array
+              description: Optional stable game identifiers (VNDB id, app id, etc).
+              items:
+                type: string
+            additionalProperties: true
+
+      formats:
+        type: array
+        description: |
+          File / directory patterns the CLI recognizes. Used as a
+          coarse pre-filter before `cli identify <path>`.
+        items:
+          type: object
+          properties:
+            # Exactly one of these is the rule's "trigger". A rule
+            # MAY declare multiple triggers to broaden the match.
+            extension:
+              type: string
+              description: File extension, including the leading dot (e.g. `.pfs`).
+              pattern: '^\.[A-Za-z0-9]+$'
+            name_match:
+              type: string
+              description: Exact file or directory name (e.g. `system.ini`).
+            path_glob:
+              type: string
+              description: Glob pattern relative to the game root.
+            directory:
+              type: string
+              description: Required directory name (e.g. `game/`).
+            kind:
+              type: string
+              enum:
+                - file
+                - directory
+                - any
+              default: file
+            min_bytes:
+              type: number
+              description: |
+                Optional. Reject matches on files smaller than this
+                (avoids false positives on stubs).
+          additionalProperties: true
+
+      magic_bytes:
+        type: array
+        description: |
+          Binary signatures for content-sniffing. Each rule matches
+          when the target file's bytes at `offset` equal `bytes`.
+        items:
+          type: object
+          required:
+            - bytes
+            - offset
+          properties:
+            offset:
+              type: number
+              description: Byte offset in the file (0-based).
+            bytes:
+              type: string
+              description: |
+                Hex string (e.g. `PFS ` becomes `50 46 53 20`). The
+                schema uses `string` for portability; CLI implementation
+                parses as raw bytes.
+            encoding:
+              type: string
+              enum:
+                - hex
+                - ascii
+                - utf-8
+              default: hex
+            description:
+              type: string
+          additionalProperties: true
+
 additionalProperties: true

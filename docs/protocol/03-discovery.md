@@ -38,7 +38,7 @@ Interface:
 cli manifest --yaml
 ```
 
-Schema: [`schema/manifest.schema.json`](../schema/manifest.schema.json).
+Schema: [`schema/manifest.schema.yaml`](../schema/manifest.schema.yaml).
 
 Example:
 
@@ -65,10 +65,137 @@ engine:
 | `version` | ✓ | CLI version. |
 | `protocol` | ✓ | Object with `name` and `version`. |
 | `engine` | optional | Engine identification; required for engine-specific CLIs. |
+| `targets` | optional | Engine-recognition metadata: which games / file shapes this CLI can recognize. See [§ Identify](#identify). |
 
 `id` MUST NOT change between compatible CLI updates. Changing `id`
 implies the CLI has become a different compatible implementation (and
 the Wrapper may need to re-negotiate).
+
+### `targets` block
+
+The `targets` block tells the Wrapper **which games and file
+shapes this CLI can recognize**. The Wrapper uses it as a coarse
+pre-filter before invoking `cli identify <path>`.
+
+Three sections:
+
+- `targets.games` — Specific games the CLI can recognize (name +
+  engine_versions + optional stable ids). Generic engines (PO file
+  tools) MAY leave this empty.
+- `targets.formats` — File / directory patterns: `extension` /
+  `name_match` / `path_glob` / `directory` / `min_bytes` /
+  `kind: file | directory | any`.
+- `targets.magic_bytes` — Binary content signatures: `offset` +
+  `bytes` (hex by default). Used when extensions lie (renamed
+  files, encrypted wrappers).
+
+Schema: [`schema/manifest.schema.yaml`](../schema/manifest.schema.yaml).
+
+Example for an Artemis CLI:
+
+```yaml
+type: manifest
+protocol: {name: gcwp, version: 1.0}
+id: artemis
+name: Artemis CLI
+version: 1.2.0
+engine:
+  id: artemis
+  versions: ["2.x"]
+
+targets:
+  games:
+    - name: Higurashi no Naku Koro ni
+      engine_versions: ["2.0", "2.1"]
+    - name: Umineko no Naku Koro ni
+      engine_versions: ["2.1", "2.2"]
+
+  formats:
+    - extension: .pfs
+      kind: file
+    - name_match: system.ini
+      kind: file
+
+  magic_bytes:
+    - offset: 0
+      bytes: "50 46 53 20"     # "PFS " in ASCII
+      encoding: hex
+      description: PFS archive magic header
+```
+
+The `targets` block is **declarative** — the CLI is the source of
+truth, and the rule list is whatever the CLI author chose. Different
+CLIs MAY use wildly different rule shapes. The Wrapper treats the
+`targets` block as a hint, not a contract.
+
+---
+
+## Identify
+
+A CLI MUST also expose a per-path identification operation:
+
+```bash
+cli identify <path> --yaml
+```
+
+`<path>` is a file or directory. The CLI inspects the path and
+returns which of its `targets` rules matched, with confidence and
+evidence.
+
+The Wrapper calls `cli identify` after the coarse `manifest.targets`
+filter, to confirm a target before extract/inject. The Wrapper MAY
+also call `cli identify` on every candidate CLI for the same path
+and pick the highest-confidence match — this is how multi-engine
+launchers (e.g. one CLI per engine family) triage a new game.
+
+### Response
+
+Schema: [`schema/identify.schema.yaml`](../schema/identify.schema.yaml).
+
+```yaml
+type: identify
+id: 01HIDENT
+
+target:
+  path: /storage/games/higurashi/game.pfs
+  kind: file
+  size: 421876
+
+matched:
+  - engine: artemis
+    confidence: high
+    rule:
+      kind: magic_bytes
+      matched: "50 46 53 20"
+    game:
+      name: Higurashi no Naku Koro ni
+      engine_versions: ["2.0", "2.1"]
+```
+
+Empty `matched` means the CLI does not handle the target. Multiple
+entries are ambiguous candidates; the Wrapper SHOULD sort by
+`confidence` descending.
+
+### Confidence
+
+| Level | Meaning |
+| --- | --- |
+| `high`   | Multiple rules matched (e.g. extension + magic_bytes + known-game id). |
+| `medium` | One rule matched. |
+| `low`    | Heuristic guess. The Wrapper MUST NOT treat `low` as confirmation without its own sanity check. |
+
+### When to call
+
+The Wrapper calls `cli identify`:
+
+- Before the first extract/inject on a new game (cold start).
+- When a user adds a new game directory and asks the wrapper to
+  pick a CLI.
+- When the wrapper's own `manifest.targets` filter is too coarse
+  and a finer answer is needed.
+
+The Wrapper MUST NOT call `cli identify` in a hot loop during
+extract/inject — it is a cold-path operation.
 
 ---
 
@@ -82,7 +209,7 @@ Interface:
 cli features --yaml
 ```
 
-Schema: [`schema/features.schema.json`](../schema/features.schema.json).
+Schema: [`schema/features.schema.yaml`](../schema/features.schema.yaml).
 
 Example:
 

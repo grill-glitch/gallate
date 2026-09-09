@@ -31,7 +31,7 @@ hardcode engine knowledge.
 
 ## Validation rules document
 
-Schema: [`schema/validation.schema.json`](../schema/validation.schema.json).
+Schema: [`schema/validation.schema.yaml`](../schema/validation.schema.yaml).
 
 Interface:
 

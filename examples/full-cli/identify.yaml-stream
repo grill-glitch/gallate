@@ -1,0 +1,59 @@
+# full-cli identify.yaml-stream
+#
+# Trace of a Wrapper-driven triage:
+# 1. Wrapper finds three candidate CLIs (artemis, kirikiri, renpy)
+#    whose `manifest.targets` overlap with the candidate path.
+# 2. Wrapper calls `cli identify <path>` on each.
+# 3. The artemis CLI returns `high` confidence via magic_bytes match.
+# 4. The kirikiri CLI returns `medium` (extension match only).
+# 5. The renpy CLI returns `low` (heuristic).
+# 6. Wrapper picks artemis.
+
+# ----- stdin: Wrapper -> artemis CLI -----
+{type: request, id: 01HIDENT, operation: identify, input: [{path: /storage/games/higurashi/game.pfs}]}
+
+# ----- stdout: artemis responds -----
+{type: response, id: 01HIDENT, operation: identify, accepted: true}
+
+{type: identify, id: 01HIDENT, target: {path: /storage/games/higurashi/game.pfs, kind: file, size: 421876}, matched: [{engine: artemis, confidence: high, rule: {kind: magic_bytes, matched: "50 46 53 20"}, game: {name: Higurashi no Naku Koro ni, engine_versions: ["2.0", "2.1"]}}]}
+
+# exit code 0
+
+# ----- stdin: Wrapper -> kirikiri CLI -----
+{type: request, id: 02HIDENT, operation: identify, input: [{path: /storage/games/higurashi/game.pfs}]}
+
+# ----- stdout: kirikiri responds -----
+{type: response, id: 02HIDENT, operation: identify, accepted: true}
+
+{type: identify, id: 02HIDENT, target: {path: /storage/games/higurashi/game.pfs, kind: file, size: 421876}, matched: []}
+
+# exit code 0 (empty matched is a valid result, not an error)
+
+# ----- stdin: Wrapper -> renpy CLI -----
+{type: request, id: 03HIDENT, operation: identify, input: [{path: /storage/games/higurashi/game.pfs}]}
+
+# ----- stdout: renpy responds -----
+{type: response, id: 03HIDENT, operation: identify, accepted: true}
+
+{type: identify, id: 03HIDENT, target: {path: /storage/games/higurashi/game.pfs}, matched: [{engine: renpy, confidence: low, rule: {kind: path_glob, matched: "**/game.pfs"}}]}
+
+# exit code 0
+
+# Wrapper conclusion: artemis (high) wins.  kirikiri declined (empty
+# matched).  renpy's low-confidence guess is discarded.
+
+# ----- stdin: Wrapper -> artemis CLI (real operation follows) -----
+{type: request, id: 04HEXTRACT, operation: extract, input: [{path: /storage/games/higurashi/game.pfs, kind: file}], output: [{path: /storage/translations/higurashi, kind: directory}]}
+
+# ----- stdout -----
+{type: response, id: 04HEXTRACT, operation: extract, accepted: true}
+
+{type: event, event: started, id: 04HEXTRACT, operation: extract}
+
+{type: event, event: progress, current: 50, total: 100}
+
+{type: event, event: statistics, statistics: {files: {processed: 318}, text: {extracted: 8421}}}
+
+{type: event, event: completed, id: 04HEXTRACT, statistics: {files: {processed: 318}, text: {extracted: 8421}}}
+
+# exit code 0

@@ -60,6 +60,30 @@ Wrapper MUST NOT skip steps. See [03-discovery.md](./03-discovery.md).
 
 ---
 
+## Operation selection (per target)
+
+Once a Wrapper has all candidate CLIs discovered, it MUST pick
+the right CLI for each candidate game / file before invoking any
+operation. Two-step process:
+
+```text
+1. Read manifest.targets from each candidate CLI
+2. Pick the candidate whose targets match the candidate path;
+   if multiple match, call cli identify <path> on each
+3. Pick the highest-confidence identify result
+```
+
+Step 2's `cli identify` is per-CLI, per-path. The Wrapper runs it
+once per candidate that survived the manifest.targets filter.
+
+If no candidate matches, the Wrapper reports "no engine recognized"
+to the user. The Wrapper MUST NOT silently pick a CLI.
+
+See [03-discovery.md § Identify](./03-discovery.md#identify) for
+the response shape and confidence levels.
+
+---
+
 ## Running an operation
 
 ```text
@@ -91,7 +115,7 @@ type: command
 command: cancel
 ```
 
-Schema: [`schema/cancel-command.schema.json`](../schema/cancel-command.schema.json).
+Schema: [`schema/cancel-command.schema.yaml`](../schema/cancel-command.schema.yaml).
 
 CLI behavior:
 

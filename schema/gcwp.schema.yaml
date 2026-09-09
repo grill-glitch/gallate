@@ -34,6 +34,7 @@ oneOf:
   - $ref: ./statistics.schema.yaml
   - $ref: ./validation-rules.schema.yaml
   - $ref: ./validation-result.schema.yaml
+  - $ref: ./identify.schema.yaml
   - $ref: ./cancel-command.schema.yaml
 
 # A schema-level additionalProperties: false would be too strict

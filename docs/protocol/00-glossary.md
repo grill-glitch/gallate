@@ -127,6 +127,14 @@ CLI invocation without `--yaml`. Free-form output aimed at terminal users.
 
 ## I
 
+### Identify
+
+The `cli identify <path>` operation. Returns a list of matched
+recognition rules from `manifest.targets`, each tagged with a
+confidence level (`high` / `medium` / `low`). The Wrapper uses
+this to pick the right CLI for a candidate game path. See
+[03-discovery.md § Identify](./03-discovery.md#identify).
+
 ### ID (Operation ID)
 
 The ULID/UUID the Wrapper assigns to each operation request, used to

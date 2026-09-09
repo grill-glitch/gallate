@@ -138,3 +138,45 @@ Affected files:
     rewritten with the normative model.
 - No schema change (the data model lives at the Shell layer,
     not at the IPC layer).
+### Engine recognition: `manifest.targets` + `cli identify`
+
+A new capability that lets a Wrapper pick the right CLI for a
+candidate game file or directory.
+
+- `manifest.targets` — declarative block listing games,
+  file / directory patterns, and binary signatures the CLI
+  recognizes. Used as a coarse pre-filter.
+- `cli identify <path> --yaml` — per-path inspection that
+  reports which rules matched, with confidence and evidence.
+  Used to disambiguate when `manifest.targets` matches
+  multiple CLIs.
+- New `schema/identify.schema.yaml` for the response shape.
+- New `Operation selection` section in `docs/protocol/11-process.md`
+  describing how a Wrapper combines `manifest.targets` and
+  `cli identify` to pick a CLI.
+- `docs/protocol/02-core-protocol.md` adds `identify` to the
+  message-type table.
+- `docs/protocol/03-discovery.md` adds a full Identify section
+  (EN + ZH).
+- `examples/full-cli/manifest.yaml` now carries `targets`.
+- `examples/full-cli/identify.yaml-stream` shows the triaging
+  flow across three candidate CLIs.
+
+Affected files:
+
+- `schema/manifest.schema.yaml` — `targets` block schema.
+- `schema/gcwp.schema.yaml` — `$ref: ./identify.schema.yaml`
+  added to the oneOf dispatch.
+- `schema/identify.schema.yaml` — new file.
+- `docs/protocol/03-discovery.md` and its Chinese translation —
+  new `Identify` section.
+- `docs/protocol/02-core-protocol.md` — `identify` row in
+  message types table.
+- `docs/protocol/11-process.md` — new `Operation selection
+  (per target)` section.
+- `docs/protocol/00-glossary.md` and its Chinese translation —
+  `### Identify` term.
+- `examples/full-cli/manifest.yaml` — sample `targets` block.
+- `examples/full-cli/identify.yaml-stream` — new trace file.
+- `examples/README.md` and `README.md` / `README.zh-CN.md` —
+  tree index updated.

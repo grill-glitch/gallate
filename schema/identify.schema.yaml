@@ -1,0 +1,126 @@
+# Identify schema — returned by `cli identify <path> --yaml`.
+# See docs/protocol/03-discovery.md § Identify.
+
+$schema: https://json-schema.org/draft-07/schema#
+$id: https://github.com/grill-glitch/gallate/schema/identify.schema.yaml
+title: Identify
+description: |
+  Result of `cli identify <path> --yaml`. The CLI inspects the
+  given file or directory and reports which engine(s) it can
+  handle, with rule-level evidence. The Wrapper uses this to
+  confirm a target before extract/inject.
+
+  A response with an empty `matched` array means "this CLI does
+  not handle the target." Multiple entries in `matched` indicate
+  ambiguous candidates; the Wrapper MUST sort by `confidence`
+  descending and pick the highest.
+
+required:
+  - type
+  - id
+  - target
+  - matched
+
+properties:
+  type:
+    type: string
+    const: identify
+
+  id:
+    type: string
+    description: |
+      Identifier for this identify request (echoed back from the
+      CLI so the Wrapper can correlate).
+    pattern: '^[A-Za-z0-9_-]+$'
+
+  target:
+    type: object
+    description: The path that was identified.
+    required:
+      - path
+    properties:
+      path:
+        type: string
+        description: The original path argument.
+      kind:
+        type: string
+        enum:
+          - file
+          - directory
+        description: |
+          Whether the path resolved to a file or directory. CLI
+          SHOULD set this; the Wrapper MAY also discover it from
+          the filesystem.
+      size:
+        type: number
+        description: File size in bytes (when kind=file).
+    additionalProperties: true
+
+  matched:
+    type: array
+    description: |
+      Detection results. Empty array means "not my engine." Order
+      is significant: the Wrapper SHOULD treat the first entry as
+      the best match.
+    items:
+      type: object
+      required:
+        - rule
+        - confidence
+      properties:
+        engine:
+          type: string
+          description: |
+            Engine id the CLI matched against (from
+            `manifest.engine.id`). When this CLI is engine-agnostic,
+            the field is omitted.
+        confidence:
+          type: string
+          enum:
+            - high
+            - medium
+            - low
+          description: |
+            How confident the CLI is. `high` = multiple rules
+            matched; `medium` = one rule matched; `low` = heuristic
+            guess. The Wrapper MUST NOT treat `low` as confirmation
+            without its own sanity check.
+        rule:
+          type: object
+          description: |
+            The first rule that matched. Carries enough detail for
+            a human to verify why the CLI claimed this target.
+          properties:
+            kind:
+              type: string
+              enum:
+                - extension
+                - name_match
+                - path_glob
+                - directory
+                - magic_bytes
+            matched:
+              type: string
+              description: The exact value that matched (e.g. `.pfs`, `system.ini`, `50 46 53 20`).
+          additionalProperties: true
+        game:
+          type: object
+          description: |
+            When the CLI can identify a specific game (not just an
+            engine family), it returns the matching `games` entry
+            from `manifest.targets.games`.
+          properties:
+            name:
+              type: string
+            engine_versions:
+              type: array
+              items:
+                type: string
+            ids:
+              type: array
+              items:
+                type: string
+          additionalProperties: true
+      additionalProperties: true
+
+additionalProperties: true

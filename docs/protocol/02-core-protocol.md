@@ -105,6 +105,7 @@ See [12-compatibility.md](./12-compatibility.md) for full rules.
 | `event` | CLI → Wrapper | One entry in the event stream |
 | `status` | CLI → Wrapper | Reply to a status query (see [06-status.md](./06-status.md)) |
 | `status-query` | Wrapper → CLI | Ask for a status snapshot mid-operation |
+| `identify` | CLI → Wrapper | Reply to `cli identify <path>`. See [03-discovery.md § Identify](./03-discovery.md#identify). |
 | `validation-result` | CLI → Wrapper | A validation finding during/after an operation |
 
 > **Note**: `validation-rules` is **not** a wire message — it is the

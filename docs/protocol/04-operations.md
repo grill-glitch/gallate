@@ -23,7 +23,7 @@ list.
 
 ## Operation Request
 
-Schema: [`schema/request.schema.json`](../schema/request.schema.json).
+Schema: [`schema/request.schema.yaml`](../schema/request.schema.yaml).
 
 Wrapper sends a single `request` message over stdin:
 

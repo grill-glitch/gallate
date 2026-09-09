@@ -25,7 +25,7 @@ Line Protocol format. See
 | `completed` | Basic | The operation ended successfully. |
 | `cancelled` | Full | The operation was cancelled. |
 
-Schema: [`schema/event.schema.json`](../schema/event.schema.json).
+Schema: [`schema/event.schema.yaml`](../schema/event.schema.yaml).
 
 ---
 

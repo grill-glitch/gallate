@@ -198,3 +198,124 @@ Full     = Standard + cancellation + status 流式 + diagnostics
 ```
 
 见 [13-一致性.md](./13-conformance.md)。
+---
+
+## Identify(引擎识别)
+
+Wrapper 拿到一组候选 CLI 后,**必须**为每个候选游戏/文件挑出合适的 CLI,
+才能调用 `extract` / `inject`。这是两步过程:
+
+```text
+1. 读每个候选 CLI 的 manifest.targets
+2. targets 命中的 CLI 中,如有多于 1 个,分别调用 cli identify <path>
+3. 选最高置信度的结果
+```
+
+### `targets` 块
+
+`manifest.targets` 告诉 Wrapper 该 CLI 能识别哪些游戏与文件形态。
+三部分:
+
+- `targets.games` — 该 CLI 能识别的具体游戏(名称 + 引擎版本 + 可选稳定 id)。
+  通用引擎(PO 工具)可留空。
+- `targets.formats` — 文件/目录形态: `extension` / `name_match` /
+  `path_glob` / `directory` / `min_bytes` / `kind: file | directory | any`。
+- `targets.magic_bytes` — 二进制内容签名: `offset` + `bytes`(默认十六进制)。
+  用于扩展名撒谎的情况(改名文件、加密壳)。
+
+Schema: [`schema/manifest.schema.yaml`](../../schema/manifest.schema.yaml)。
+
+Artemis CLI 示例:
+
+```yaml
+type: manifest
+protocol: {name: gcwp, version: 1.0}
+id: artemis
+name: Artemis CLI
+version: 1.2.0
+engine:
+  id: artemis
+  versions: ["2.x"]
+
+targets:
+  games:
+    - name: Higurashi no Naku Koro ni
+      engine_versions: ["2.0", "2.1"]
+    - name: Umineko no Naku Koro ni
+      engine_versions: ["2.1", "2.2"]
+
+  formats:
+    - extension: .pfs
+      kind: file
+    - name_match: system.ini
+      kind: file
+
+  magic_bytes:
+    - offset: 0
+      bytes: "50 46 53 20"     # "PFS " in ASCII
+      encoding: hex
+      description: PFS archive magic header
+```
+
+`targets` 是**声明性**的 —— CLI 是真值来源,规则列表是 CLI 作者决定的。
+不同 CLI 的规则形态可以差异很大。Wrapper 把 `targets` 当作**提示**,不是合同。
+
+### `cli identify`
+
+CLI 还可以暴露一个按路径识别的操作:
+
+```bash
+cli identify <path> --yaml
+```
+
+`<path>` 是文件或目录。CLI 检查路径并返回命中的 `targets` 规则,
+带置信度与证据。
+
+Wrapper 用 `cli identify` 在粗筛之后做精确识别。Wrapper 也可以对同一
+路径调用所有候选 CLI 的 `cli identify`,选最高置信度 —— 这是多引擎启动器
+(如一个 CLI 对应一个引擎家族)对新游戏的分流方式。
+
+Schema: [`schema/identify.schema.yaml`](../../schema/identify.schema.yaml)。
+
+```yaml
+type: identify
+id: 01HIDENT
+
+target:
+  path: /storage/games/higurashi/game.pfs
+  kind: file
+  size: 421876
+
+matched:
+  - engine: artemis
+    confidence: high
+    rule:
+      kind: magic_bytes
+      matched: "50 46 53 20"
+    game:
+      name: Higurashi no Naku Koro ni
+      engine_versions: ["2.0", "2.1"]
+```
+
+`matched` 为空表示 CLI 不处理该目标。多条记录代表歧义候选;Wrapper 应按
+`confidence` 降序排序。
+
+### 置信度
+
+| 等级 | 含义 |
+| --- | --- |
+| `high`   | 多条规则同时命中(如 extension + magic_bytes + 已知游戏 id)。 |
+| `medium` | 一条规则命中。 |
+| `low`    | 启发式猜测。Wrapper **不得**把 `low` 当作确认,必须自己做合理性检查。 |
+
+### 调用时机
+
+Wrapper 在以下情况调用 `cli identify`:
+
+- 新游戏的第一次 extract/inject(冷启动)
+- 用户添加新游戏目录,让 Wrapper 挑选 CLI
+- Wrapper 的 `manifest.targets` 过滤太粗,需要更精确的答案
+
+Wrapper **不得**在 extract/inject 的热循环中调用 `cli identify` —— 它是
+冷路径操作。
+

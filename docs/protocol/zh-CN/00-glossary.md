@@ -90,6 +90,10 @@ CLI 进程结束时返回的整数。标准定义见 [02-核心协议.md § 退�
 
 ## I
 
+### Identify
+
+`cli identify <path>` 操作。返回 `manifest.targets` 中命中的识别规则列表,每条带置信度等级(`high` / `medium` / `low`)。Wrapper 用它为候选游戏路径挑选合适的 CLI。见 [03-能力发现.md § Identify](./03-discovery.md#identify)。
+
 ### 操作 ID
 
 Wrapper 给每次操作请求分配的 ULID/UUID,用于关联事件、状态快照和最终退出。

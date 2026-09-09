@@ -10,7 +10,7 @@ project dashboards, OmegaT sidebars, and billing/quotas.
 
 ## Statistics document
 
-Schema: [`schema/statistics.schema.json`](../schema/statistics.schema.json).
+Schema: [`schema/statistics.schema.yaml`](../schema/statistics.schema.yaml).
 
 Example:
 
