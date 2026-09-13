@@ -15,9 +15,9 @@
 {"type":"event","event":"file","action":"extract","path":"scenes/day1/scene_002.bin"}
 {"type":"event","event":"warning","code":"UNSUPPORTED_FORMAT","message":"Skipping non-text resource","path":"scenes/intro/font.dat"}
 {"type":"event","event":"phase","name":"writing"}
-{"type":"event","event":"file","action":"write","path":"translation/intro.xlf"}
-{"type":"event","event":"file","action":"write","path":"translation/day1/scene_001.xlf"}
-{"type":"event","event":"file","action":"write","path":"translation/day1/scene_002.xlf"}
+{"type":"event","event":"file","action":"write","path":"translation/intro.json"}
+{"type":"event","event":"file","action":"write","path":"translation/day1/scene_001.json"}
+{"type":"event","event":"file","action":"write","path":"translation/day1/scene_002.json"}
 {"type":"event","event":"phase","name":"finalizing"}
 {"type":"event","event":"statistics","statistics":{"files":{"scanned":4,"matched":3,"processed":3,"skipped":1,"failed":0},"text":{"extracted":421,"injected":0},"duration":12.84}}
 {"type":"event","event":"completed","id":"01HEXTRACT","statistics":{"files":{"processed":3},"text":{"extracted":421}}}

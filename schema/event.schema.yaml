@@ -110,7 +110,7 @@ properties:
 
   # Location fields on validation events. Same shape as
   # validation-result.schema.yaml. Wrapper MAY attach findings to
-  # XLIFF using translation_unit when present.
+  # units using translation_unit when present.
   file:
     type: string
   line:

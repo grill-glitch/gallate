@@ -10,7 +10,7 @@
 ```text
 ┌─────────────────────────────────────────┐
 │                  OmegaT                 │
-│       Translation / Review / XLIFF      │
+│    Translation / Review / JSON units    │
 └────────────────────┬────────────────────┘
                      │ Gamelate Wrapper API
                      │  (Wrapper is the only integration point)
@@ -42,7 +42,7 @@ Owns:
 
 | Concern | Notes |
 | --- | --- |
-| XLIFF read & write | The canonical bilingual exchange format |
+| JSON unit read & write | The canonical bilingual exchange format |
 | Translation | Human translators; not specified by GCWP |
 | Translation Memory (TM) | Per-project / shared |
 | Terminology / Glossaries | Optional, engine-agnostic |

@@ -24,19 +24,14 @@ Schema:[`schema/event.schema.yaml`](../../schema/event.schema.yaml)。
 
 ## started
 
-```yaml
-type: event
-event: started
-id: 01HXYZ
-operation: extract
+```jsonl
+{"type":"event","event":"started","id":"01HXYZ","operation":"extract"}
 ```
 
 ## phase
 
-```yaml
-type: event
-event: phase
-name: scanning
+```jsonl
+{"type":"event","event":"phase","name":"scanning"}
 ```
 
 推荐阶段名:
@@ -54,31 +49,22 @@ finalizing
 
 ## progress
 
-```yaml
-type: event
-event: progress
-current: 37
-total: 100
+```jsonl
+{"type":"event","event":"progress","current":37,"total":100}
 ```
 
 不确定进度:
 
-```yaml
-type: event
-event: progress
-current: 37
-total: null
+```jsonl
+{"type":"event","event":"progress","current":37,"total":null}
 ```
 
 Wrapper 必须支持不确定进度。
 
 ## file
 
-```yaml
-type: event
-event: file
-action: extract
-path: script/scene_037.bin
+```jsonl
+{"type":"event","event":"file","action":"extract","path":"script/scene_037.bin"}
 ```
 
 标准 action:
@@ -99,91 +85,69 @@ delete
 
 与 `file` 同形,但引擎资源粒度:
 
-```yaml
-type: event
-event: resource
-action: extract
-path: scenes/day1/scene_037/string_0042
+```jsonl
+{"type":"event","event":"resource","action":"extract","path":"scenes/day1/scene_037/string_0042"}
 ```
 
 ## warning
 
-```yaml
-type: event
-event: warning
-code: UNSUPPORTED_FORMAT
-message: Unsupported resource format
-path: foo.dat
+```jsonl
+{"type":"event","event":"warning","code":"UNSUPPORTED_FORMAT","message":"Unsupported resource format","path":"foo.dat"}
 ```
 
 `warning` **不得**引起非零退出码,除非 CLI 显式提升。见 [09-诊断.md](./09-diagnostics.md)。
 
 ## error
 
-```yaml
-type: event
-event: error
-code: INVALID_INPUT
-message: Input archive is corrupted
-path: ./game.pfs
+```jsonl
+{"type":"event","event":"error","code":"INVALID_INPUT","message":"Input archive is corrupted","path":"./game.pfs"}
 ```
 
 `error.code` 是 Wrapper 分类错误的稳定键。`message` 可随版本变化。
 
 ## validation
 
-```yaml
-type: event
-event: validation
-rule: placeholder
-severity: error
+```json
+{
+  "type": "event",
+  "event": "validation",
+  "rule": "placeholder",
+  "severity": "error",
 
-source: Hello {player}
-target: 你好
+  "source": "Hello {player}",
+  "target": "你好",
 
-message: Required placeholder is missing: {player}
+  "message": "Required placeholder is missing: {player}",
 
-file: script/scene_037.bin
-line: 42
-offset: 12
-length: 8
+  "file": "script/scene_037.bin",
+  "line": 42,
+  "offset": 12,
+  "length": 8
+}
 ```
 
 见 [08-验证.md](./08-validation.md)。
 
 ## statistics
 
-```yaml
-type: event
-event: statistics
-
-statistics:
-  files:
-    processed: 317
-  text:
-    extracted: 8421
+```jsonl
+{"type":"event","event":"statistics","statistics":{"files":{"processed":317},"text":{"extracted":8421}}}
 ```
 
 通常承载最终快照。见 [07-统计.md](./07-statistics.md)。
 
 ## completed
 
-```yaml
-type: event
-event: completed
-
-statistics:
-  files:
-    processed: 317
+```jsonl
+{"type":"event","event":"completed","statistics":{"files":{"processed":317}}}
 ```
 
 `completed` 表示操作成功结束。CLI 必须在 exit 0 前发出,然后进程退出。
 
 ## cancelled
 
-```yaml
-type: event
-event: cancelled
+```jsonl
+{"type":"event","event":"cancelled"}
 ```
 
 CLI 必须在收到 `cancel` 命令后(见 [11-进程.md § 取消](./11-process.md))且在退出码 `6` 之前发出 `cancelled`。

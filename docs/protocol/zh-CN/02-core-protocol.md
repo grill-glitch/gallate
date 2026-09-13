@@ -21,11 +21,11 @@ exit    → 最终结果                 (Wrapper 读取)
 
 stdin / stdout 上每条携带协议内容的行必须是一个独立 JSON 对象(标准 [JSON Lines][jsonl] / NDJSON)。接收方必须把每行作为独立文档处理:
 
-```yaml
-{type: event, event: started, operation: extract}
-{type: event, event: progress, current: 10, total: 100}
-{type: event, event: progress, current: 50, total: 100}
-{type: event, event: completed}
+```jsonl
+{"type":"event","event":"started","operation":"extract"}
+{"type":"event","event":"progress","current":10,"total":100}
+{"type":"event","event":"progress","current":50,"total":100}
+{"type":"event","event":"completed"}
 ```
 
 接收方必须把每行视为独立文档。
@@ -49,10 +49,8 @@ YAML **不**属于 GCWP 线缆格式。YAML 留给 **Shell 层**(人类面对的
 
 每条 GCWP 消息必须声明协议版本。版本字符串 `MAJOR.MINOR`(如 `1.0`、`1.1`、`2.0`)。
 
-```yaml
-type: protocol
-name: gcwp
-version: 1.0
+```jsonl
+{"type":"protocol","name":"gcwp","version":1.0}
 ```
 
 ### MAJOR
@@ -86,7 +84,7 @@ version: 1.0
 | `status-query` | Wrapper → CLI | 操作中请求状态快照 |
 | `validation-result` | CLI → Wrapper | 操作中或操作后的验证发现 |
 
-> **注意**:`validation-rules` **不是**线缆消息 —— 它是 `cli validation --yaml`
+> **注意**:`validation-rules` **不是**线缆消息 —— 它是 `cli validation`
 > 在发现阶段返回文档的 `type` 字段。详见
 > [validation-rules.schema.yaml](../../schema/validation-rules.schema.yaml)。
 > 线缆上的 payload形状是 `event: validation`,带 `severity` 与 `rule` 字段;

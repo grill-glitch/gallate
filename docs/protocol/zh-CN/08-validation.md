@@ -15,7 +15,7 @@ Wrapper
   ↓
 OmegaT Validation Engine      (通用,应用规则)
   ↓
-XLIFF                         (按翻译单元附带发现)
+JSON 单元                     (按翻译单元附带发现)
 ```
 
 CLI 不得自建审校 UI。Wrapper 不得实现引擎专有验证。OmegaT Validator 不得硬编码引擎知识。
@@ -27,35 +27,41 @@ Schema:[`schema/validation.schema.yaml`](../../schema/validation.schema.yaml)。
 接口:
 
 ```bash
-cli validation --yaml
+cli validation
 ```
 
 示例:
 
-```yaml
-type: validation
+```json
+{
+  "type": "validation",
 
-rules:
-  - id: control-code
-    type: regex
-    scope: text
-    pattern: "\\[A-Z]+(?:_[0-9]+)?"
-    flags: []
-    severity: error
-
-  - id: player-name
-    type: placeholder
-    scope: text
-    pattern: "\\{player\\}"
-    preserve: true
-    severity: error
-
-  - id: max-length
-    type: constraint
-    scope: text
-    constraint:
-      maxLength: 80
-    severity: warning
+  "rules": [
+    {
+      "id": "control-code",
+      "type": "regex",
+      "scope": "text",
+      "pattern": "\\[A-Z]+(?:_[0-9]+)?",
+      "flags": [],
+      "severity": "error"
+    },
+    {
+      "id": "player-name",
+      "type": "placeholder",
+      "scope": "text",
+      "pattern": "\\{player\\}",
+      "preserve": true,
+      "severity": "error"
+    },
+    {
+      "id": "max-length",
+      "type": "constraint",
+      "scope": "text",
+      "constraint": {"maxLength": 80},
+      "severity": "warning"
+    }
+  ]
+}
 ```
 
 ## 规则字段
@@ -73,13 +79,15 @@ rules:
 
 最基本的引擎专有检查。
 
-```yaml
-id: control-code
-type: regex
-scope: text
-pattern: "\\[A-Z]+(?:_[0-9]+)?"
-flags: []
-severity: error
+```json
+{
+  "id": "control-code",
+  "type": "regex",
+  "scope": "text",
+  "pattern": "\\[A-Z]+(?:_[0-9]+)?",
+  "flags": [],
+  "severity": "error"
+}
 ```
 
 pattern 是正则表达式(风味由引擎定;Wrapper 缺省 PCRE/RE2)。
@@ -88,13 +96,15 @@ pattern 是正则表达式(风味由引擎定;Wrapper 缺省 PCRE/RE2)。
 
 占位符建议用 placeholder 而非 regex。
 
-```yaml
-id: player-name
-type: placeholder
-scope: text
-pattern: "\\{player\\}"
-preserve: true
-severity: error
+```json
+{
+  "id": "player-name",
+  "type": "placeholder",
+  "scope": "text",
+  "pattern": "\\{player\\}",
+  "preserve": true,
+  "severity": "error"
+}
 ```
 
 语义:
@@ -116,13 +126,14 @@ Target:
 
 不适合 regex 的规则:
 
-```yaml
-id: max-length
-type: constraint
-scope: text
-constraint:
-  maxLength: 80
-severity: warning
+```json
+{
+  "id": "max-length",
+  "type": "constraint",
+  "scope": "text",
+  "constraint": {"maxLength": 80},
+  "severity": "warning"
+}
 ```
 
 标准 constraint 字段:
@@ -147,8 +158,8 @@ resource    整资源
 
 例:
 
-```yaml
-scope: target
+```json
+{ "scope": "target" }
 ```
 
 表示规则仅作用于译文,不作用于源文。
@@ -167,20 +178,22 @@ OmegaT 可让用户改视觉展示,但**不得**改 CLI 给出的规则定义。
 
 CLI 评估规则后,发出:
 
-```yaml
-type: validation
-rule: placeholder
-severity: error
+```json
+{
+  "type": "validation",
+  "rule": "placeholder",
+  "severity": "error",
 
-source: Hello {player}
-target: 你好
+  "source": "Hello {player}",
+  "target": "你好",
 
-message: Required placeholder is missing: {player}
+  "message": "Required placeholder is missing: {player}",
 
-file: script/scene_037.bin
-line: 42
-offset: 12
-length: 8
+  "file": "script/scene_037.bin",
+  "line": 42,
+  "offset": 12,
+  "length": 8
+}
 ```
 
 可选上下文字段:
@@ -199,7 +212,7 @@ translation_unit
 三类规则源组合:
 
 ```text
-Engine    from cli validation --yaml
+Engine    from cli validation
 Project   from gallate.yaml  (项目级覆盖 / 新增)
 User      from OmegaT user preferences (最后一行,最高优先级)
 ```

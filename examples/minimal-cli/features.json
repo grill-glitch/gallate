@@ -1,0 +1,1 @@
+{"type":"features","operations":{"extract":true,"inject":false,"build":false,"unpack":false,"repack":false},"media":{"text":true,"image":false,"audio":false,"video":false},"validation":{"syntax":false,"regex":false,"placeholder":false,"constraint":false},"runtime":{"events":false,"status":false,"statistics":false,"cancellation":false}}

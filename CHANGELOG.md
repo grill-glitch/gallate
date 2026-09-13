@@ -308,3 +308,222 @@ Affected files:
 - `shell-layer-examples/README.md` — tree updated.
 - `README.md` and `README.zh-CN.md` — `.meta.json` added to the
   contract table and the repository tree.
+
+### Text format: XLIFF / PO removed → JSON only; position-derived unit ids
+
+The Shell-layer text format is now **JSON only**. XLIFF and PO are no
+longer standard formats.
+
+- `text.format`'s standard value is `json`; the enum is now
+  `json | engine-extension`. An engine that needs XLIFF or PO exposes
+  it as an engine-extension format, and Wrapper / OmegaT are only
+  required to handle JSON.
+- `text.format: xliff` / `text.format: po` are no longer standard
+  values. The "lossy format" rules (PO cannot carry `snippet`) are
+  deleted: there is exactly one serialization, and it is lossless.
+- The unit-document shape is now normative: a JSON object with
+  `schema` and a flat `units` array, each unit carrying `id` /
+  `source` / `target` plus the metadata keys declared in `text.meta`
+  (`original_file`, `location`, `context`, `engine_path`).
+- `text.meta` now maps to JSON keys rather than XLIFF attributes /
+  context-groups. Defaults: `original_file` → `original_file`,
+  `source_context` → `context`, `location` → `location`,
+  `engine_path` → `engine_path`.
+
+**Position-derived unit ids.** The unit `id` MUST be derived from the
+unit's position in its source file — `<basename>:L<line>`, e.g.
+`0083_SS_01_x.lua:L0142` — and MUST NOT be a run-order counter
+(`tu-0001`, `U000001`). A counter renumbers every later unit after an
+insertion and silently invalidates translation memory.
+
+- `<line>` is 1-based, zero-padded to at least 4 digits (`L0142`).
+- A second and later unit on the same line takes a `#2`, `#3`, …
+  suffix, counted in source order.
+- Unknown position (binary blob, obfuscated bytecode) uses the
+  sentinel `line: 0`.
+- Ids MUST be unique within the containing document; two source files
+  sharing a basename are disambiguated by prepending path components
+  joined with `_`.
+
+This supersedes the earlier draft entries that described XLIFF / PO
+serializations of the source-context model and the "lossy format"
+rule.
+
+Affected files:
+
+- `docs/shell-layer/05-config-file.md` and its Chinese translation —
+  `text:` block, field table, `meta:` mappings, a new `id`
+  (position-derived) subsection, the `original-file` example, and the
+  source-context section (single JSON serialization; "Lossy formats"
+  removed).
+- `docs/shell-layer/12-file-structure.md` and its Chinese
+  translation — §12.4 rewritten as "Unit file format (JSON)" with the
+  normative unit-document shape; every `.xlf` path example is now
+  `.json`.
+- `docs/shell-layer/13-meta-json.md` and its Chinese translation —
+  `.meta.json` project paths use `.json`.
+- `docs/protocol/00-glossary.md` and its Chinese translation — the
+  `### XLIFF` entry is replaced by `### JSON Unit File` under `J`.
+- `docs/protocol/01-architecture.md`, `03-discovery.md`,
+  `08-validation.md` and their Chinese translations.
+- `schema/event.schema.yaml`, `schema/validation-result.schema.yaml`,
+  `schema/manifest.schema.yaml` — comment / description updates;
+  `translation_unit` is now described as a position-derived id.
+- `examples/full-cli/{extract,inject,validation-result}.jsonl` — `.xlf`
+  paths are now `.json`, and `translation_unit` is position-derived.
+- `shell-layer-examples/{full,minimal}-project/gallate.yaml` and
+  `.meta.json` — `format: json`, JSON `meta:` keys, `.json` paths.
+
+### `gallate.translation` v1: full resource-path ids, entries[], `source_context` / `state` / `notes` / `placeholders` / `provenance` / `context` (translator-helper) / `metadata`
+
+The unit-file format graduates from "JSON only" to a versioned
+**`gallate.translation`** format with explicit semantics for every
+field. Three substantive changes from the earlier `units[]` shape:
+
+1. **Container is versioned, not just unit fields.** The top level
+   carries `format: "gallate.translation"`, `version: 1`, and the
+   `(source, target)` language pair. The `units[]` array is renamed
+   to `entries[]` (entries are the carrying shape; the term "unit"
+   in the JSON clashes with `"%d"` format-specifier units).
+2. **`id` is the full resource path**, not the basename. The rule
+   becomes `<resource-path>:L<line>` (e.g.
+   `scenario/0083_SS_01_x.lua:L0142`). The full path makes the
+   "two source files share a basename" disambiguation rule
+   unnecessary; only the `#<n>` suffix for "two strings on the
+   same line" remains.
+3. **Every entry field is classified as derived / authored /
+   engine** and the spec forbids the CLI from silently recomputing
+   authored fields on re-extraction. The principle is:
+
+   > **Source is derived. Identity is derived. Translation is
+   > authored. Notes are authored. Provenance is authored. Engine
+   > metadata is engine-defined.**
+
+   This becomes the new top-level section §12.13 / §12.13 设计原则
+   of the file-structure chapter.
+
+New / renamed entry fields:
+
+- `state` — current label, not a state machine. Allowed values
+  `initial` / `translated` / `reviewed` / `final` / `needs_review`.
+  Labels MUST be reversible; a `final` entry MUST be allowed to
+  drop to `needs_review` when the source changes.
+- `source_context` — the old `context` field, renamed so the word
+  "context" can be reused for translator helpers. Same four-field
+  shape (`file` / `line` / `end_line` / `snippet`); same
+  "extract-only, preserved through inject" lifecycle.
+- `context` (new meaning) — translator-authored free-form helper
+  data (`speaker` / `scene` / `location` / …). The CLI MUST NOT
+  add keys to or delete keys from this object on re-extraction.
+- `placeholders` — auto-detected placeholders in `source`, with
+  `id` / `syntax` / `type` (`variable` / `format` / `control` /
+  `ruby` / `engine`). The CLI uses this to enforce that `target`
+  preserves the placeholders; mismatches fail inject.
+- `notes` — translator / reviewer notes, `{text, author}` objects
+  in a stack. CLI MUST NOT delete, reorder, or overwrite notes on
+  re-extraction.
+- `provenance` — where the current `target` came from
+  (`human` / `machine` / `tm` / `mt+review`). Free-form extras
+  (`model` / `method` / `score` / `source` / `match`).
+- `metadata` — engine extension namespace, the only "engine"
+  field. Replaces the previous `meta` (the config-side `text.meta`
+  mapping declaration keeps the `meta` name).
+
+Config-side `text.meta` mapping now has 5 default keys
+(`original_file` → `original_file`, `source_context` →
+`source_context`, `location` → `location`, `placeholders` →
+`placeholders`, `engine_path` → `engine_path`); a new
+`metadata.placeholders` flag turns placeholder emission on or off
+(default `true`).
+
+Affected files:
+
+- `docs/shell-layer/12-file-structure.md` and its Chinese
+  translation — §12.4 rewritten as three subsections
+  (Container / Entry / Multiple-file layout) plus the new §12.13
+  Design principle. The previous "Unit document shape" table is
+  replaced by an entry-field table with a Kind column
+  (derived / authored / engine).
+- `docs/shell-layer/05-config-file.md` and its Chinese
+  translation — `id` rule uses the full resource path; new
+  subsections for `state`, `source`, `target`, `source_context`
+  (renamed from `source-context`), `context` (new meaning),
+  `placeholders`, `notes`, `provenance`, `metadata`; the field
+  table and the §5.2 complete example are updated for the 5-key
+  `meta:` and the new `metadata.placeholders` flag.
+- `shell-layer-examples/{full,minimal}-project/gallate.yaml` —
+  `meta:` now has 5 keys; `metadata.placeholders: true` added.
+- `examples/full-cli/validation-result.jsonl` — `translation_unit`
+  is now `scenario/day1/scene_001.bin:L0042` (full path).
+
+### Single source-of-truth rule for serialization formats
+
+The spec has now committed to a strict division of labor between
+serialization formats:
+
+- **Streaming protocol data** (events, requests, responses, status
+  queries, validation findings) — **JSON Lines / NDJSON**, one
+  JSON object per line. The `.jsonl` extension marks these.
+- **Single-document protocol data** (discovery output: manifest,
+  features, validation rules, identify, status snapshots) — **JSON**,
+  one object on stdout. The `.json` extension marks these.
+- **Project config** — only `gallate.yaml`, **YAML**, because
+  humans edit it and comments / multi-line strings matter.
+- **JSON Schema definitions** — `schema/*.schema.yaml`, **YAML**
+  syntax with JSON Schema draft-07 semantics. GCWP convention; the
+  `.schema.yaml` suffix signals that.
+
+This means:
+
+- The `--yaml` flag is **gone**. Discovery commands
+  (`cli manifest`, `cli features`, `cli validation`,
+  `cli identify <path>`, `cli status`) emit JSON on stdout with
+  no flag.
+- The `Human Mode` / `Machine Mode` glossary dichotomy is
+  replaced by a single rule: protocol data is JSON, project config
+  is YAML.
+- The `YAML Line Protocol` glossary entry is removed; the
+  `YAML vs JSON` glossary entry becomes a per-role table.
+- `text/manifest.yaml` is renamed `text/manifest.json`; the YAML
+  form is deprecated.
+
+Affected files:
+
+- `examples/full-cli/{features,manifest,validation}.yaml` →
+  `examples/full-cli/{features,manifest,validation}.json`.
+- `examples/minimal-cli/{features,manifest}.yaml` →
+  `examples/minimal-cli/{features,manifest}.json`.
+- `docs/protocol/00-glossary.md` and its Chinese translation —
+  `Human Mode` / `Machine Mode` removed; `YAML vs JSON` rewritten
+  as a per-role table; `YAML Line Protocol` removed.
+- `docs/protocol/02-core-protocol.md` and its Chinese translation —
+  `--yaml` removed; the validation-rules note rephrased.
+- `docs/protocol/03-discovery.md` and its Chinese translation —
+  every `cli X --yaml` removed; every discovery example rewritten
+  in JSON.
+- `docs/protocol/05-events.md` and its Chinese translation — every
+  YAML example converted to JSON.
+- `docs/protocol/06-status.md` and its Chinese translation — the
+  inline status stream and the status-query example converted to
+  `jsonl`.
+- `docs/protocol/08-validation.md` and its Chinese translation —
+  every validation-rule and validation-result example converted to
+  JSON.
+- `docs/protocol/11-process.md` and its Chinese translation — the
+  cancel command example converted to `jsonl`.
+- `docs/protocol/13-conformance.md` and its Chinese translation —
+  every "features that MUST be true" example converted to JSON;
+  the conformance demo invocations no longer use `--yaml`.
+- `docs/shell-layer/12-file-structure.md` and its Chinese
+  translation — `text/manifest.yaml` renamed to `text/manifest.json`;
+  the example block converted to JSON.
+- `README.md` / `README.zh-CN.md` / `examples/README.md` — the
+  example trees updated; the prose explanations reworded to match
+  the new format map.
+
+> **Note on `protocol.version`:** the YAML examples used `version: 1.0`
+> (a bare number) which the JSON Schema `manifest.schema.yaml` does
+> not accept (it requires a `^[0-9]+\.[0-9]+$` string). The new JSON
+> examples use `"1.0"` (string), which validates. This is a fix, not
+> a regression — the old YAML examples would have been rejected by a
+> strict CLI implementing the schema.

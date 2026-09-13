@@ -14,36 +14,44 @@ as templates CLI authors can copy.
 examples/
 ├── README.md
 ├── minimal-cli/
-│   ├── manifest.yaml             what the CLI says it is
-│   ├── features.yaml             what the CLI claims it can do
-│   └── extract.jsonl       a single extract operation end-to-end
+│   ├── manifest.json             what the CLI says it is
+│   ├── features.json             what the CLI claims it can do
+│   └── extract.jsonl             a single extract operation end-to-end
 └── full-cli/
-    ├── manifest.yaml
-    ├── features.yaml
-    ├── validation.yaml           validation rules the CLI exposes
-    ├── validation-result.jsonl  validation findings during an operation
-    ├── extract.jsonl       full extract with progress + warnings
-    ├── inject.jsonl        full inject with validation findings
-    ├── build.jsonl         a complete build run
-    ├── cancel.jsonl        cancellation mid-operation
-    ├── identify.jsonl      Wrapper triages among candidate CLIs
-    └── errors.jsonl        failure scenarios + error codes
+    ├── manifest.json
+    ├── features.json
+    ├── validation.json           validation rules the CLI exposes
+    ├── validation-result.jsonl   validation findings during an operation
+    ├── extract.jsonl             full extract with progress + warnings
+    ├── inject.jsonl              full inject with validation findings
+    ├── build.jsonl               a complete build run
+    ├── cancel.jsonl              cancellation mid-operation
+    ├── identify.jsonl            Wrapper triages among candidate CLIs
+    └── errors.jsonl              failure scenarios + error codes
 ```
 
 The `.jsonl` extension marks streaming protocol traces: each
 line is a single JSON object — the standard [JSON Lines][jsonl]
 (NDJSON) format. CLI implementations emit one JSON value per line on
 stdout. Use this extension to distinguish streaming JSONL from
-single YAML documents (`.yaml`) and YAML Schema definitions
-(`*.schema.yaml`).
+single-object discovery responses (`.json`).
 
-The `gallate.yaml` project file and the `--yaml` flag on the
-Shell layer stay YAML — they are for humans, not for IPC.
+Discovery commands (`cli manifest`, `cli features`,
+`cli validation`, `cli identify <path>`, `cli status`) emit a
+single JSON object on stdout and use the `.json` extension.
+Streaming operations (`extract`, `inject`, `build`, `cancel`,
+`events`, `status-query`) use `.jsonl`.
+
+The `gallate.yaml` project file stays YAML — it is the **only** YAML
+in this repository. The JSON Schema files in `schema/*.schema.yaml`
+are stored in YAML syntax (GCWP convention) but their semantics
+are JSON Schema draft-07; they are not the same as user-facing
+YAML.
 
 [jsonl]: https://jsonlines.org/
 
-If you see `.yaml-stream` anywhere in this repository it is a
-stale reference and should be filed as a bug.
+If you see a `.yaml` file in `examples/` it is a stale reference
+and should be filed as a bug.
 
 ---
 
@@ -87,7 +95,7 @@ CLI authors SHOULD:
 2. Verify it satisfies Basic (handshake + one operation).
 3. Add fields to features to claim Standard.
 4. Add events to the operation stream.
-5. Add `validation.yaml` content.
+5. Add `validation.json` content.
 6. Add cancellation + status when claiming Full.
 7. Add `manifest.targets` and a `cli identify` implementation when
    targeting a Wrapper (e.g. OmegaT plugin).
@@ -106,12 +114,12 @@ Wrapper authors SHOULD:
 
 ## Trace notation
 
-```yaml
+```jsonl
 # Lines starting with `#` are comments — CLI implementations SHOULD
 # NOT emit comment-prefixed lines on stdout.
 #
 # Empty lines are also for human readability only. CLI MUST emit
-# one YAML document per non-empty, non-comment line on stdout.
+# one JSON document per non-empty, non-comment line on stdout.
 
-{type: event, event: progress, current: 50, total: 100}
+{"type":"event","event":"progress","current":50,"total":100}
 ```

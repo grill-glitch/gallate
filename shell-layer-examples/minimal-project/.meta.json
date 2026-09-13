@@ -10,7 +10,7 @@
   },
   "files": [
     {
-      "project": "text/units/demo_text.xlf",
+      "project": "text/units/demo_text.json",
       "source": "demo.pfs",
       "type": "text",
       "cli": {"id": "minimal", "version": "0.1.0"},

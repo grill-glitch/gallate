@@ -20,7 +20,7 @@ Wrapper
   ↓
 OmegaT Validation Engine      (generic, applies rules)
   ↓
-XLIFF                         (findings attached per translation unit)
+JSON units                    (findings attached per translation unit)
 ```
 
 The CLI MUST NOT build its own review GUI. The Wrapper MUST NOT
@@ -36,35 +36,41 @@ Schema: [`schema/validation.schema.yaml`](../schema/validation.schema.yaml).
 Interface:
 
 ```bash
-cli validation --yaml
+cli validation
 ```
 
 Example:
 
-```yaml
-type: validation
+```json
+{
+  "type": "validation",
 
-rules:
-  - id: control-code
-    type: regex
-    scope: text
-    pattern: "\\[A-Z]+(?:_[0-9]+)?"
-    flags: []
-    severity: error
-
-  - id: player-name
-    type: placeholder
-    scope: text
-    pattern: "\\{player\\}"
-    preserve: true
-    severity: error
-
-  - id: max-length
-    type: constraint
-    scope: text
-    constraint:
-      maxLength: 80
-    severity: warning
+  "rules": [
+    {
+      "id": "control-code",
+      "type": "regex",
+      "scope": "text",
+      "pattern": "\\[A-Z]+(?:_[0-9]+)?",
+      "flags": [],
+      "severity": "error"
+    },
+    {
+      "id": "player-name",
+      "type": "placeholder",
+      "scope": "text",
+      "pattern": "\\{player\\}",
+      "preserve": true,
+      "severity": "error"
+    },
+    {
+      "id": "max-length",
+      "type": "constraint",
+      "scope": "text",
+      "constraint": {"maxLength": 80},
+      "severity": "warning"
+    }
+  ]
+}
 ```
 
 ---
@@ -86,13 +92,15 @@ rules:
 
 The most basic engine-specific check.
 
-```yaml
-id: control-code
-type: regex
-scope: text
-pattern: "\\[A-Z]+(?:_[0-9]+)?"
-flags: []
-severity: error
+```json
+{
+  "id": "control-code",
+  "type": "regex",
+  "scope": "text",
+  "pattern": "\\[A-Z]+(?:_[0-9]+)?",
+  "flags": [],
+  "severity": "error"
+}
 ```
 
 Pattern is a regular expression (engine-defined flavor — Wrapper SHOULD
@@ -104,13 +112,15 @@ default to PCRE/RE2 if no engine hint).
 
 Use this instead of regex for placeholders.
 
-```yaml
-id: player-name
-type: placeholder
-scope: text
-pattern: "\\{player\\}"
-preserve: true
-severity: error
+```json
+{
+  "id": "player-name",
+  "type": "placeholder",
+  "scope": "text",
+  "pattern": "\\{player\\}",
+  "preserve": true,
+  "severity": "error"
+}
 ```
 
 Semantics:
@@ -134,13 +144,14 @@ Target:
 
 Rules that don't fit regex:
 
-```yaml
-id: max-length
-type: constraint
-scope: text
-constraint:
-  maxLength: 80
-severity: warning
+```json
+{
+  "id": "max-length",
+  "type": "constraint",
+  "scope": "text",
+  "constraint": {"maxLength": 80},
+  "severity": "warning"
+}
 ```
 
 Standard constraint fields:
@@ -167,8 +178,8 @@ resource    whole resource
 
 Example:
 
-```yaml
-scope: target
+```json
+{ "scope": "target" }
 ```
 
 means the rule applies only to the translation, not the source.
@@ -192,20 +203,22 @@ change the rule definition returned by the CLI.
 
 When the CLI evaluates a rule against a translated unit, it emits:
 
-```yaml
-type: validation
-rule: placeholder
-severity: error
+```json
+{
+  "type": "validation",
+  "rule": "placeholder",
+  "severity": "error",
 
-source: Hello {player}
-target: 你好
+  "source": "Hello {player}",
+  "target": "你好",
 
-message: Required placeholder is missing: {player}
+  "message": "Required placeholder is missing: {player}",
 
-file: script/scene_037.bin
-line: 42
-offset: 12
-length: 8
+  "file": "script/scene_037.bin",
+  "line": 42,
+  "offset": 12,
+  "length": 8
+}
 ```
 
 Optional context fields:
@@ -226,7 +239,7 @@ translation_unit
 Three rule sources combine:
 
 ```text
-Engine    from cli validation --yaml
+Engine    from cli validation
 Project   from gallate.yaml  (per-project rule overrides/additions)
 User      from OmegaT user preferences (last-line, highest priority)
 ```

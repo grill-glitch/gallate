@@ -90,7 +90,7 @@ defined in [02-core-protocol.md § Exit Codes](./02-core-protocol.md#exit-codes)
 
 ### Features
 
-The static capability description a CLI returns from `cli features --yaml`.
+The static capability description a CLI returns from `cli features`.
 See [03-discovery.md](./03-discovery.md).
 
 ### Full Conformance
@@ -119,9 +119,11 @@ GCWP only consumes its parsed result, never the raw file.
 
 ## H
 
-### Human Mode
+### Help Output
 
-CLI invocation without `--yaml`. Free-form output aimed at terminal users.
+The free-form, human-readable text a CLI prints when invoked
+without arguments or with `--help`. Help output is **not** part
+of the wire protocol; the Wrapper MUST NOT parse it.
 
 ---
 
@@ -155,9 +157,14 @@ A progress report with `total: null`. See
 
 ## J
 
-### (reserved)
+### JSON Unit File
 
-No J-terms yet.
+The standard unit-file format produced/consumed by OmegaT — one JSON
+document per logical translation domain, holding a flat `units`
+array. GCWP does not touch unit files directly; Wrapper maps GCWP
+operations to and from the JSON unit documents described at the
+Shell layer
+([12-file-structure.md](../shell-layer/12-file-structure.md)).
 
 ---
 
@@ -184,14 +191,9 @@ YAML is **not** part of the wire. See
 
 ## M
 
-### Machine Mode
-
-CLI invocation with `--yaml`. Stable machine-readable output. Wrapper
-MUST use this mode.
-
 ### Manifest
 
-The CLI identity document. Returned by `cli manifest --yaml`. See
+The CLI identity document. Returned by `cli manifest`. See
 [03-discovery.md § Manifest](./03-discovery.md#manifest).
 
 ---
@@ -363,32 +365,24 @@ engine-specific logic. See [01-architecture.md](./01-architecture.md).
 
 ---
 
-## X
-
-### XLIFF
-
-The standard bilingual exchange format produced/consumed by OmegaT.
-GCWP does not touch XLIFF directly — Wrapper maps between GCWP
-operations and XLIFF.
-
----
-
 ## Y
 
 ### YAML vs JSON
 
-GCWP deliberately splits the two formats along the layer boundary:
+GCWP picks one format per role:
 
-- **Wrapper ↔ CLI** (stdin / stdout) — **JSON**. One JSON object
-  per line. Machine-to-machine, never read by a human.
-- **User ↔ CLI** (Shell layer) — **YAML**. `--yaml` flag and
-  `gallate.yaml` project file. Human-readable.
+| Role | Format | Why |
+| --- | --- | --- |
+| Project config (`gallate.yaml`) | YAML | Edited by humans; comments and multi-line strings matter. |
+| Wire protocol (stdin / stdout) | JSON Line Protocol for streaming, JSON for one-shot discovery | Machine-to-machine; never read by a human. |
+| Reference snapshots of discovery output (e.g. `examples/full-cli/manifest.json`) | JSON | One document; the schema is the source of truth. |
+| Project state (`.meta.json`) | JSON | Machine-derived; the schema is the source of truth. |
+| Translation state (`text/units/*.json`, format `gallate.translation`) | JSON | Human-edited values live inside a JSON container so the data shape stays machine-validatable. |
 
-Rationale: JSON is the lingua franca of programmatic IPC; YAML is
-better for files humans edit. Conflating the two leads to either
-JSON leaking into user-facing files (bad UX) or YAML on the wire
-(machine parsing tax). GCWP picks each format for what it's good
-at.
+YAML appears **only** as `gallate.yaml` (the project config file
+editable by humans). There is no `--yaml` flag; CLI discovery
+commands (`cli manifest`, `cli features`, `cli validation`,
+`cli identify <path>`, `cli status`) emit JSON on stdout.
 
 ---
 

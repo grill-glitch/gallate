@@ -20,12 +20,13 @@ output: ./game-zh.pfs
 # Per-media defaults that `init` writes when the CLI supports them.
 # Both blocks use standard values; users edit them freely.
 text:
-  format: xliff
+  format: json
   layout: flat
   metadata:
     original_file: true
     source_context: true
     location: true
+    placeholders: true
     engine_path: true
   hardcoded:
     context_lines: 3
@@ -41,10 +42,11 @@ text:
       - post-extract
       - pre-inject
   meta:
-    original_file:  trans-unit-attribute
-    source_context: context-group
-    location:       context.linenumber
-    engine_path:    trans-unit-attribute
+    original_file:  original_file
+    source_context: source_context
+    location:       location
+    placeholders:   placeholders
+    engine_path:    engine_path
 
 image:
   layout: sub_media_dirs

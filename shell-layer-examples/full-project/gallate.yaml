@@ -34,15 +34,16 @@ scripts:
     - ./scripts/repack.py
 
 # ── Per-media output configuration ──────────────────────────────
-# Text media: XLIFF, flat layout, with original-file and source-context
-# for hardcoded strings.
+# Text media: JSON, flat layout, with original_file and context
+# (source-context) for hardcoded strings.
 text:
-  format: xliff
+  format: json
   layout: flat
   metadata:
     original_file: true
     source_context: true
     location: true
+    placeholders: true
     engine_path: true
   hardcoded:
     context_lines: 3
@@ -60,10 +61,11 @@ text:
       - pre-inject
   # Pure mappings: which output key each metadata field lands in.
   meta:
-    original_file:  trans-unit-attribute
-    source_context: context-group
-    location:       context.linenumber
-    engine_path:    trans-unit-attribute
+    original_file:  original_file
+    source_context: source_context
+    location:       location
+    placeholders:   placeholders
+    engine_path:    engine_path
 
 image:
   layout: sub_media_dirs

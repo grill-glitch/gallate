@@ -49,9 +49,9 @@ Working directory defaults to the gallate.yaml Project Root. See
 ```text
 1. Spawn CLI
 2. Announce / check protocol version
-3. Read manifest       (cli manifest --yaml)
-4. Read features       (cli features --yaml)
-5. Read validation     (cli validation --yaml)
+3. Read manifest       (cli manifest)
+4. Read features       (cli features)
+5. Read validation     (cli validation)
 6. Read operation list (extended; optional)
 7. Begin operations
 ```
@@ -110,9 +110,8 @@ or implicit-failure via exit code).
 
 Wrapper initiates cancellation by sending a `command` message:
 
-```yaml
-type: command
-command: cancel
+```jsonl
+{"type":"command","command":"cancel"}
 ```
 
 Schema: [`schema/cancel-command.schema.yaml`](../schema/cancel-command.schema.yaml).

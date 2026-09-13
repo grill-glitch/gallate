@@ -111,7 +111,7 @@ Minimum example:
   },
   "files": [
     {
-      "project": "text/units/scenes_intro.xlf",
+      "project": "text/units/scenes_intro.json",
       "source": "scenes/intro.bin",
       "type": "text",
       "cli": {"id": "artemis", "version": "1.2.0"},
@@ -166,7 +166,7 @@ The CLI:
 For example, given:
 
 ```text
-text/units/scenes_intro.xlf
+text/units/scenes_intro.json
 ```
 
 the CLI MUST NOT treat this as a reliable hint for
@@ -193,13 +193,13 @@ project/
 ├── gallate.yaml
 ├── .meta.json
 └── text/
-    └── main.xliff
+    └── main.json
 ```
 
 The next `inject` reads `.meta.json` and pairs:
 
 ```text
-text/main.xliff
+text/main.json
         │
         ▼
 game/data/script.pfs
@@ -229,7 +229,7 @@ When a project file moves, the entry's `project` field updates:
 
 ```json
 {
-  "project": "new/path/main.xliff",
+  "project": "new/path/main.json",
   "source": "game/data/script.pfs"
 }
 ```
@@ -364,7 +364,7 @@ ignore: ["*.tmp"]
 // .meta.json — state
 {
   "files": [
-    {"project": "translation/main.xliff", "source": "game/data/script.pfs", "type": "text"}
+    {"project": "translation/main.json", "source": "game/data/script.pfs", "type": "text"}
   ]
 }
 ```

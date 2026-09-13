@@ -79,7 +79,7 @@ properties:
         type: array
         description: |
           Specific games this CLI can recognize. Engines that are
-          purely generic (e.g. PO-file tools) MAY leave this empty.
+          purely generic MAY leave this empty.
         items:
           type: object
           required:

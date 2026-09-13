@@ -27,18 +27,8 @@ Schema: [`schema/request.schema.yaml`](../schema/request.schema.yaml).
 
 Wrapper sends a single `request` message over stdin:
 
-```yaml
-type: request
-id: 01HXYZABCDEF
-operation: extract
-
-input:
-  - ./game.pfs
-
-output:
-  - ./translation
-
-options: {}
+```jsonl
+{"type":"request","id":"01HXYZABCDEF","operation":"extract","input":["./game.pfs"],"output":["./translation"],"options":{}}
 ```
 
 ### Fields
@@ -62,16 +52,10 @@ across the event stream. Wrapper SHOULD use a ULID or UUIDv7.
 
 A path can be a plain string or a structured object:
 
-```yaml
-# Plain (CLI infers file vs directory)
-- ./game.pfs
-
-# Structured (explicit kind)
-- path: ./game.pfs
-  kind: file
-
-- path: ./data
-  kind: directory
+```jsonl
+"./game.pfs"
+{"path":"./game.pfs","kind":"file"}
+{"path":"./data","kind":"directory"}
 ```
 
 CLI MUST be able to handle both files and directories. Wrapper SHOULD
@@ -93,11 +77,8 @@ See [10-configuration.md § Path Resolution](./10-configuration.md).
 Ignore rules belong to the **operation configuration**, not to the
 CLI itself.
 
-```yaml
-ignore:
-  - "**/*.tmp"
-  - "**/cache/**"
-  - system.dat
+```jsonl
+{"ignore":["**/*.tmp","**/cache/**","system.dat"]}
 ```
 
 Glob implementation notes belong in the CLI documentation. GCWP does
@@ -113,10 +94,8 @@ for the matching semantics (`*`, `**`, `?`, `directory/`).
 
 Engine-specific options live under `options` with engine namespacing:
 
-```yaml
-options:
-  artemis.text_encoding: shift-jis
-  artemis.rebuild_index: true
+```jsonl
+{"options":{"artemis.text_encoding":"shift-jis","artemis.rebuild_index":true}}
 ```
 
 Reserved namespaces:

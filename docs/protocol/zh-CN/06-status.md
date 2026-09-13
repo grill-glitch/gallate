@@ -19,7 +19,7 @@ Statistics  → 累计,"已做了多少"
 `features.runtime.status` 为 true 时,CLI 必须支持状态接口。
 
 ```bash
-cli status --yaml
+cli status
 ```
 
 CLI 正在运行操作时,返回该操作快照;空闲时 `state` 为 `idle`。
@@ -30,22 +30,25 @@ Schema:[`schema/status.schema.yaml`](../../schema/status.schema.yaml)。
 
 示例:
 
-```yaml
-type: status
-state: running
+```json
+{
+  "type": "status",
+  "state": "running",
 
-operation: extract
+  "operation": "extract",
+  "phase": "extracting",
 
-phase: extracting
+  "progress": {
+    "current": 72,
+    "total": 100
+  },
 
-progress:
-  current: 72
-  total: 100
+  "current": {
+    "path": "script/scene_072.bin"
+  },
 
-current:
-  path: script/scene_072.bin
-
-started_at: 2026-09-09T12:34:56Z
+  "started_at": "2026-09-09T12:34:56Z"
+}
 ```
 
 ### 字段
@@ -69,7 +72,7 @@ Status **不是**事件流中的一项。它是**同步查询 / 应答**:
 Wrapper                          CLI
    │                              │
    │  ── status.jsonl ───▶  │   (单行,一个 JSON 对象)
-   │                              │   或单独的 `cli status --yaml`
+   │                              │   或单独的 `cli status`
    │  ◀── single status doc ───  │   invocation
    │                              │
 ```
@@ -78,12 +81,12 @@ Wrapper                          CLI
 
 ### A. 内联状态流
 
-```yaml
+```jsonl
 # Wrapper → CLI stdin (running 中任意时刻)
-{type: status-query, id: 01HSTATUS}
+{"type":"status-query","id":"01HSTATUS"}
 
 # CLI → Wrapper stdout (单行,然后回到正常事件流)
-{type: status, state: running, operation: extract, phase: extracting, progress: {current: 72, total: 100}}
+{"type":"status","state":"running","operation":"extract","phase":"extracting","progress":{"current":72,"total":100}}
 ```
 
 CLI 返回**恰好一条** status 文档,然后继续事件流。
@@ -92,7 +95,7 @@ CLI 返回**恰好一条** status 文档,然后继续事件流。
 
 ```bash
 # Wrapper 启一个单独 CLI 进程(或用 side-band fd),问:
-$ cli status --yaml
+$ cli status
 ```
 
 避免污染操作 stdin/stdout。Wrapper 在长操作频繁轮询时倾向此方式。
@@ -110,9 +113,8 @@ Status 不再有独立 YAML 形式。若 `cli status` 返回 JSON Lines 以外�
 
 Schema:[`schema/status-query.schema.yaml`](../../schema/status-query.schema.yaml)。
 
-```yaml
-type: status-query
-id: 01HSTATUS
+```jsonl
+{"type":"status-query","id":"01HSTATUS"}
 ```
 
 Wrapper 必须带 query id,CLI 必须把同一 id 在 `type: status` 应答里回显,

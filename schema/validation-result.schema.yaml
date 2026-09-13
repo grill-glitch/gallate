@@ -52,7 +52,7 @@ properties:
 
   # Location — all optional, but at least one of `path` / `file` /
   # `translation_unit` SHOULD be present so the Wrapper can route the
-  # finding back into XLIFF.
+  # finding back into the unit document.
   path:
     type: string
     description: Resource path the finding refers to.
@@ -70,9 +70,10 @@ properties:
     description: Logical resource id (engine-defined).
   translation_unit:
     type: string
-    description: |
-      XLIFF `<unit id="...">` the finding should be attached to.
-      When set, Wrapper MAY skip path/line and attach by unit id.
+    description: |-
+      Position-derived unit id (`<basename>:L<line>`) the finding
+      should be attached to. When set, Wrapper MAY skip path/line and
+      attach by unit id.
 
   # Optional structured context (engine-specific).
   details:

@@ -38,14 +38,35 @@ Wrapper spawn CLI:
 ```text
 1. spawn CLI
 2. 通告 / 检查协议版本
-3. 读 manifest       (cli manifest --yaml)
-4. 读 features       (cli features --yaml)
-5. 读 validation     (cli validation --yaml)
+3. 读 manifest       (cli manifest)
+4. 读 features       (cli features)
+5. 读 validation     (cli validation)
 6. 读操作列表         (扩展;可选)
 7. 开始操作
 ```
 
 Wrapper **不得**跳步。见 [03-能力发现.md](./03-discovery.md)。
+
+## 操作选择(每个目标)
+
+Wrapper 拿到所有候选 CLI 的发现结果后,**必须**在调用任何操作之前
+为每个候选游戏 / 文件挑出合适的 CLI。两步过程:
+
+```text
+1. 读每个候选 CLI 的 manifest.targets
+2. 选与目标路径匹配的候选;若多个匹配,对每个分别调 cli identify <path>
+3. 选最高置信度的 identify 结果
+```
+
+第 2 步的 `cli identify` 是 per-CLI、per-path 的。Wrapper 对每个
+通过 manifest.targets 过滤的候选各跑一次。
+
+没有候选匹配时,Wrapper 向用户报告"无引擎识别"。Wrapper **不得**
+静默选一个 CLI。
+
+响应形状与置信度等级见 [03-能力发现.md § Identify](./03-discovery.md#identify)。
+
+---
 
 ## 跑一次操作
 
@@ -69,9 +90,8 @@ Wrapper                          CLI
 
 Wrapper 发 `command` 消息:
 
-```yaml
-type: command
-command: cancel
+```jsonl
+{"type":"command","command":"cancel"}
 ```
 
 Schema:[`schema/cancel-command.schema.yaml`](../../schema/cancel-command.schema.yaml)。

@@ -35,25 +35,23 @@ The manifest is the CLI's identity document.
 Interface:
 
 ```bash
-cli manifest --yaml
+cli manifest
 ```
 
+The CLI writes a single JSON object on stdout, then exits 0.
 Schema: [`schema/manifest.schema.yaml`](../schema/manifest.schema.yaml).
 
 Example:
 
-```yaml
-type: manifest
-protocol:
-  name: gcwp
-  version: 1.0
-id: artemis
-name: Artemis CLI
-version: 1.2.0
-engine:
-  id: artemis
-  versions:
-    - 2.x
+```json
+{
+  "type": "manifest",
+  "protocol": {"name": "gcwp", "version": "1.0"},
+  "id": "artemis",
+  "name": "Artemis CLI",
+  "version": "1.2.0",
+  "engine": {"id": "artemis", "versions": ["2.x"]}
+}
 ```
 
 ### Fields
@@ -80,8 +78,8 @@ pre-filter before invoking `cli identify <path>`.
 Three sections:
 
 - `targets.games` — Specific games the CLI can recognize (name +
-  engine_versions + optional stable ids). Generic engines (PO file
-  tools) MAY leave this empty.
+  engine_versions + optional stable ids). Generic engines MAY leave
+  this empty.
 - `targets.formats` — File / directory patterns: `extension` /
   `name_match` / `path_glob` / `directory` / `min_bytes` /
   `kind: file | directory | any`.
@@ -93,34 +91,33 @@ Schema: [`schema/manifest.schema.yaml`](../schema/manifest.schema.yaml).
 
 Example for an Artemis CLI:
 
-```yaml
-type: manifest
-protocol: {name: gcwp, version: 1.0}
-id: artemis
-name: Artemis CLI
-version: 1.2.0
-engine:
-  id: artemis
-  versions: ["2.x"]
-
-targets:
-  games:
-    - name: Higurashi no Naku Koro ni
-      engine_versions: ["2.0", "2.1"]
-    - name: Umineko no Naku Koro ni
-      engine_versions: ["2.1", "2.2"]
-
-  formats:
-    - extension: .pfs
-      kind: file
-    - name_match: system.ini
-      kind: file
-
-  magic_bytes:
-    - offset: 0
-      bytes: "50 46 53 20"     # "PFS " in ASCII
-      encoding: hex
-      description: PFS archive magic header
+```json
+{
+  "type": "manifest",
+  "protocol": {"name": "gcwp", "version": "1.0"},
+  "id": "artemis",
+  "name": "Artemis CLI",
+  "version": "1.2.0",
+  "engine": {"id": "artemis", "versions": ["2.x"]},
+  "targets": {
+    "games": [
+      {"name": "Higurashi no Naku Koro ni", "engine_versions": ["2.0", "2.1"]},
+      {"name": "Umineko no Naku Koro ni",  "engine_versions": ["2.1", "2.2"]}
+    ],
+    "formats": [
+      {"extension": ".pfs", "kind": "file"},
+      {"name_match": "system.ini", "kind": "file"}
+    ],
+    "magic_bytes": [
+      {
+        "offset": 0,
+        "bytes": "50 46 53 20",
+        "encoding": "hex",
+        "description": "PFS archive magic header"
+      }
+    ]
+  }
+}
 ```
 
 The `targets` block is **declarative** — the CLI is the source of
@@ -135,7 +132,7 @@ CLIs MAY use wildly different rule shapes. The Wrapper treats the
 A CLI MUST also expose a per-path identification operation:
 
 ```bash
-cli identify <path> --yaml
+cli identify <path>
 ```
 
 `<path>` is a file or directory. The CLI inspects the path and
@@ -152,24 +149,26 @@ launchers (e.g. one CLI per engine family) triage a new game.
 
 Schema: [`schema/identify.schema.yaml`](../schema/identify.schema.yaml).
 
-```yaml
-type: identify
-id: 01HIDENT
+```json
+{
+  "type": "identify",
+  "id": "01HIDENT",
 
-target:
-  path: /storage/games/higurashi/game.pfs
-  kind: file
-  size: 421876
+  "target": {
+    "path": "/storage/games/higurashi/game.pfs",
+    "kind": "file",
+    "size": 421876
+  },
 
-matched:
-  - engine: artemis
-    confidence: high
-    rule:
-      kind: magic_bytes
-      matched: "50 46 53 20"
-    game:
-      name: Higurashi no Naku Koro ni
-      engine_versions: ["2.0", "2.1"]
+  "matched": [
+    {
+      "engine": "artemis",
+      "confidence": "high",
+      "rule": {"kind": "magic_bytes", "matched": "50 46 53 20"},
+      "game": {"name": "Higurashi no Naku Koro ni", "engine_versions": ["2.0", "2.1"]}
+    }
+  ]
+}
 ```
 
 Empty `matched` means the CLI does not handle the target. Multiple
@@ -206,40 +205,47 @@ The features document describes what the CLI can do.
 Interface:
 
 ```bash
-cli features --yaml
+cli features
 ```
 
+The CLI writes a single JSON object on stdout, then exits 0.
 Schema: [`schema/features.schema.yaml`](../schema/features.schema.yaml).
 
 Example:
 
-```yaml
-type: features
+```json
+{
+  "type": "features",
 
-operations:
-  extract: true
-  inject: true
-  build: true
-  unpack: true
-  repack: true
+  "operations": {
+    "extract": true,
+    "inject":  true,
+    "build":   true,
+    "unpack":  true,
+    "repack":  true
+  },
 
-media:
-  text: true
-  image: true
-  audio: false
-  video: false
+  "media": {
+    "text":  true,
+    "image": true,
+    "audio": false,
+    "video": false
+  },
 
-validation:
-  syntax: true
-  regex: true
-  placeholder: true
-  constraint: true
+  "validation": {
+    "syntax":      true,
+    "regex":       true,
+    "placeholder": true,
+    "constraint":  true
+  },
 
-runtime:
-  events: true
-  status: true
-  statistics: true
-  cancellation: true
+  "runtime": {
+    "events":       true,
+    "status":       true,
+    "statistics":   true,
+    "cancellation": true
+  }
+}
 ```
 
 ### Four independent dimensions
@@ -300,13 +306,11 @@ each dimension.
 
 Unsupported capabilities MUST be reported as `false`, not omitted:
 
-```yaml
-runtime:
-  status: false
-  statistics: false
-
-validation:
-  syntax: false
+```json
+{
+  "runtime":     {"status": false, "statistics": false},
+  "validation":  {"syntax": false}
+}
 ```
 
 Wrapper MUST NOT assume a capability exists just because it is missing

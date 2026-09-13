@@ -28,25 +28,23 @@ Manifest 是 CLI 的身份文档。
 接口:
 
 ```bash
-cli manifest --yaml
+cli manifest
 ```
 
+CLI 在 stdout 输出一个 JSON 对象,然后以 0 退出。
 Schema:[`schema/manifest.schema.yaml`](../../schema/manifest.schema.yaml)。
 
 示例:
 
-```yaml
-type: manifest
-protocol:
-  name: gcwp
-  version: 1.0
-id: artemis
-name: Artemis CLI
-version: 1.2.0
-engine:
-  id: artemis
-  versions:
-    - 2.x
+```json
+{
+  "type": "manifest",
+  "protocol": {"name": "gcwp", "version": "1.0"},
+  "id": "artemis",
+  "name": "Artemis CLI",
+  "version": "1.2.0",
+  "engine": {"id": "artemis", "versions": ["2.x"]}
+}
 ```
 
 ### 字段
@@ -68,40 +66,47 @@ features 文档描述 CLI 能做什么。
 接口:
 
 ```bash
-cli features --yaml
+cli features
 ```
 
+CLI 在 stdout 输出一个 JSON 对象,然后以 0 退出。
 Schema:[`schema/features.schema.yaml`](../../schema/features.schema.yaml)。
 
 示例:
 
-```yaml
-type: features
+```json
+{
+  "type": "features",
 
-operations:
-  extract: true
-  inject: true
-  build: true
-  unpack: true
-  repack: true
+  "operations": {
+    "extract": true,
+    "inject":  true,
+    "build":   true,
+    "unpack":  true,
+    "repack":  true
+  },
 
-media:
-  text: true
-  image: true
-  audio: false
-  video: false
+  "media": {
+    "text":  true,
+    "image": true,
+    "audio": false,
+    "video": false
+  },
 
-validation:
-  syntax: true
-  regex: true
-  placeholder: true
-  constraint: true
+  "validation": {
+    "syntax":      true,
+    "regex":       true,
+    "placeholder": true,
+    "constraint":  true
+  },
 
-runtime:
-  events: true
-  status: true
-  statistics: true
-  cancellation: true
+  "runtime": {
+    "events":       true,
+    "status":       true,
+    "statistics":   true,
+    "cancellation": true
+  }
+}
 ```
 
 ### 四个独立维度
@@ -159,13 +164,11 @@ runtime:
 
 不支持的能力必须显式标 `false`,**不得**省略:
 
-```yaml
-runtime:
-  status: false
-  statistics: false
-
-validation:
-  syntax: false
+```json
+{
+  "runtime":    {"status": false, "statistics": false},
+  "validation": {"syntax": false}
+}
 ```
 
 Wrapper **不得**因某字段在 `features` 中缺失就假定它存在。
@@ -217,7 +220,7 @@ Wrapper 拿到一组候选 CLI 后,**必须**为每个候选游戏/文件挑出�
 三部分:
 
 - `targets.games` — 该 CLI 能识别的具体游戏(名称 + 引擎版本 + 可选稳定 id)。
-  通用引擎(PO 工具)可留空。
+  通用引擎可留空。
 - `targets.formats` — 文件/目录形态: `extension` / `name_match` /
   `path_glob` / `directory` / `min_bytes` / `kind: file | directory | any`。
 - `targets.magic_bytes` — 二进制内容签名: `offset` + `bytes`(默认十六进制)。
@@ -227,34 +230,33 @@ Schema: [`schema/manifest.schema.yaml`](../../schema/manifest.schema.yaml)。
 
 Artemis CLI 示例:
 
-```yaml
-type: manifest
-protocol: {name: gcwp, version: 1.0}
-id: artemis
-name: Artemis CLI
-version: 1.2.0
-engine:
-  id: artemis
-  versions: ["2.x"]
-
-targets:
-  games:
-    - name: Higurashi no Naku Koro ni
-      engine_versions: ["2.0", "2.1"]
-    - name: Umineko no Naku Koro ni
-      engine_versions: ["2.1", "2.2"]
-
-  formats:
-    - extension: .pfs
-      kind: file
-    - name_match: system.ini
-      kind: file
-
-  magic_bytes:
-    - offset: 0
-      bytes: "50 46 53 20"     # "PFS " in ASCII
-      encoding: hex
-      description: PFS archive magic header
+```json
+{
+  "type": "manifest",
+  "protocol": {"name": "gcwp", "version": "1.0"},
+  "id": "artemis",
+  "name": "Artemis CLI",
+  "version": "1.2.0",
+  "engine": {"id": "artemis", "versions": ["2.x"]},
+  "targets": {
+    "games": [
+      {"name": "Higurashi no Naku Koro ni", "engine_versions": ["2.0", "2.1"]},
+      {"name": "Umineko no Naku Koro ni",  "engine_versions": ["2.1", "2.2"]}
+    ],
+    "formats": [
+      {"extension": ".pfs", "kind": "file"},
+      {"name_match": "system.ini", "kind": "file"}
+    ],
+    "magic_bytes": [
+      {
+        "offset": 0,
+        "bytes": "50 46 53 20",
+        "encoding": "hex",
+        "description": "PFS archive magic header"
+      }
+    ]
+  }
+}
 ```
 
 `targets` 是**声明性**的 —— CLI 是真值来源,规则列表是 CLI 作者决定的。
@@ -265,7 +267,7 @@ targets:
 CLI 还可以暴露一个按路径识别的操作:
 
 ```bash
-cli identify <path> --yaml
+cli identify <path>
 ```
 
 `<path>` 是文件或目录。CLI 检查路径并返回命中的 `targets` 规则,
@@ -277,24 +279,26 @@ Wrapper 用 `cli identify` 在粗筛之后做精确识别。Wrapper 也可以对
 
 Schema: [`schema/identify.schema.yaml`](../../schema/identify.schema.yaml)。
 
-```yaml
-type: identify
-id: 01HIDENT
+```json
+{
+  "type": "identify",
+  "id": "01HIDENT",
 
-target:
-  path: /storage/games/higurashi/game.pfs
-  kind: file
-  size: 421876
+  "target": {
+    "path": "/storage/games/higurashi/game.pfs",
+    "kind": "file",
+    "size": 421876
+  },
 
-matched:
-  - engine: artemis
-    confidence: high
-    rule:
-      kind: magic_bytes
-      matched: "50 46 53 20"
-    game:
-      name: Higurashi no Naku Koro ni
-      engine_versions: ["2.0", "2.1"]
+  "matched": [
+    {
+      "engine": "artemis",
+      "confidence": "high",
+      "rule": {"kind": "magic_bytes", "matched": "50 46 53 20"},
+      "game": {"name": "Higurashi no Naku Koro ni", "engine_versions": ["2.0", "2.1"]}
+    }
+  ]
+}
 ```
 
 `matched` 为空表示 CLI 不处理该目标。多条记录代表歧义候选;Wrapper 应按
@@ -318,4 +322,3 @@ Wrapper 在以下情况调用 `cli identify`:
 
 Wrapper **不得**在 extract/inject 的热循环中调用 `cli identify` —— 它是
 冷路径操作。
-

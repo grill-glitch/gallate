@@ -70,10 +70,8 @@ the rule that splits the two layers.
 Every GCWP message MUST declare the protocol version. The version string
 is `MAJOR.MINOR` (e.g. `1.0`, `1.1`, `2.0`).
 
-```yaml
-type: protocol
-name: gcwp
-version: 1.0
+```jsonl
+{"type":"protocol","name":"gcwp","version":1.0}
 ```
 
 ### MAJOR
@@ -110,10 +108,10 @@ See [12-compatibility.md](./12-compatibility.md) for full rules.
 | `identify` | CLI → Wrapper | Reply to `cli identify <path>`. See [03-discovery.md § Identify](./03-discovery.md#identify). |
 | `validation-result` | CLI → Wrapper | A validation finding during/after an operation |
 
-> **Note**: `validation-rules` is **not** a wire message — it is the
-> `type` field of the document returned by `cli validation --yaml`
-> during discovery. See
-> [validation-rules.schema.yaml](../schema/validation-rules.schema.yaml).
+**Note:** `validation-rules` is **not** a wire message — it is the
+`type` field of the document returned by `cli validation` during
+discovery. See
+[validation-rules.schema.yaml](../../schema/validation-rules.schema.yaml).
 > The wire-shape payload of validation findings is `event: validation`
 > with `severity` and `rule` fields; see
 > [validation-result.schema.yaml](../schema/validation-result.schema.yaml).

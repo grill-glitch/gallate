@@ -20,7 +20,7 @@ ability to share tooling across engines.
 ```text
 Standard media directories:
 
-  text/       per-translation-unit files (XLIFF / PO / JSON / …)
+  text/       per-translation-unit files (JSON / …)
   image/      per-image files
   audio/      per-audio-clip files
   video/      per-video files
@@ -36,16 +36,16 @@ Standard media directories:
 text/
 ├── manifest.yaml          # optional: what was extracted, when, by which CLI
 ├── units/                 # per-translation-unit files (default location)
-│   ├── scenes_intro.yaml
-│   ├── scenes_day1_scene_001.xlf
-│   ├── scenes_day1_scene_002.xlf
+│   ├── scenes_intro.json
+│   ├── scenes_day1_scene_001.json
+│   ├── scenes_day1_scene_002.json
 │   └── …
 └── reports/               # optional: validation findings, glossary dumps
     └── validation.yaml
 ```
 
 CLI MAY flatten `units/` so files land directly under `text/`. The
-default is `text/units/` so XLIFF files don't pollute the directory
+default is `text/units/` so unit files don't pollute the directory
 listing of a human browsing the project by hand.
 
 ### Naming convention
@@ -59,34 +59,39 @@ The recommended file name shape is:
 Examples:
 
 ```text
-scenes/intro.bin            →  text/units/scenes_intro.xlf
-scenes/day1/scene_001.bin   →  text/units/scenes_day1_scene_001.xlf
-fonts/ascii.glyph_table     →  text/units/fonts_ascii_glyph_table.xlf
+scenes/intro.bin            →  text/units/scenes_intro.json
+scenes/day1/scene_001.bin   →  text/units/scenes_day1_scene_001.json
+fonts/ascii.glyph_table     →  text/units/fonts_ascii_glyph_table.json
 ```
 
 The CLI substitutes `/` with `_` so a flat directory listing stays
 readable. Engines MAY use a deeper layout (mirror of the input
 directory) — see [12.3 Layout modes](#123-layout-modes).
 
-### `text/manifest.yaml`
+### `text/manifest.json`
 
 A CLI MAY emit this file at the end of an extract run. It records
 what was extracted and when:
 
-```yaml
-extracted_at: 2026-09-09T12:34:56Z
-cli:
-  id: artemis
-  version: 1.2.0
-  protocol: gcwp-1.0
-counts:
-  files_scanned: 1524
-  files_matched: 318
-  strings_extracted: 8421
-  by_sub_media:
-    dialog: 6320
-    menu: 480
-    hardcoded: 1621
+```json
+{
+  "extracted_at": "2026-09-09T12:34:56Z",
+  "cli": {
+    "id": "artemis",
+    "version": "1.2.0",
+    "protocol": "gcwp-1.0"
+  },
+  "counts": {
+    "files_scanned": 1524,
+    "files_matched": 318,
+    "strings_extracted": 8421,
+    "by_sub_media": {
+      "dialog": 6320,
+      "menu": 480,
+      "hardcoded": 1621
+    }
+  }
+}
 ```
 
 This file is OPTIONAL. Wrapper / OmegaT MAY use it for project
@@ -103,25 +108,25 @@ A CLI MAY pick one of three layouts. The choice is documented in
 text:
   layout: flat              # default
   # alternatives:
-  #   flat     — text/units/<path-with-_>.xlf
-  #   mirror   — text/units/<engine-path>/<file>.xlf
-  #   single   — text/translation.xlf  (all units in one file)
+  #   flat     — text/units/<path-with-_>.json
+  #   mirror   — text/units/<engine-path>/<file>.json
+  #   single   — text/translation.json  (all units in one file)
 ```
 
 | Mode | Pros | Cons |
 | ---- | ---- | ---- |
 | `flat`   | Easy git diffs across files. Easy partial commits. | Naming collisions when two source paths only differ by `/`. |
 | `mirror` | 1:1 mapping to source; no collisions. | Deep directory trees; harder to spot duplicates. |
-| `single` | One file per format — OmegaT opens one XLIFF. | One huge file; partial review impossible; merge conflicts guaranteed. |
+| `single` | One document — OmegaT opens a single file. | One huge file; partial review impossible; merge conflicts guaranteed. |
 
 ### `flat` (default)
 
 ```text
 text/units/
-├── scenes_intro.xlf
-├── scenes_day1_scene_001.xlf
-├── scenes_day1_scene_002.xlf
-└── fonts_ascii_glyph_table.xlf
+├── scenes_intro.json
+├── scenes_day1_scene_001.json
+├── scenes_day1_scene_002.json
+└── fonts_ascii_glyph_table.json
 ```
 
 ### `mirror`
@@ -129,65 +134,140 @@ text/units/
 ```text
 text/units/
 ├── scenes/
-│   ├── intro.xlf
+│   ├── intro.json
 │   └── day1/
-│       ├── scene_001.xlf
-│       └── scene_002.xlf
+│       ├── scene_001.json
+│       └── scene_002.json
 └── fonts/
     └── ascii/
-        └── glyph_table.xlf
+        └── glyph_table.json
 ```
 
 ### `single`
 
 ```text
 text/
-└── translation.xlf       # all translation units in one document
+└── translation.json      # all translation units in one document
 ```
 
 ---
 
-## 12.4 Per-format details
+## 12.4 Unit file format (`gallate.translation` v1)
 
-### XLIFF (`.xlf` / `.xliff`)
+JSON is the only standard unit-file format. XLIFF and PO are **not**
+standard formats; an engine that needs one MAY expose it as an
+engine-extension format, but Wrapper / OmegaT are not required to
+handle anything other than JSON.
 
-Standard XLIFF 1.2 with `<file>` and `<trans-unit>` elements. See
-[05-config-file.md § text: format](./05-config-file.md#text-format)
-for the metadata fields each `<trans-unit>` carries
-(`original-file`, `source-context`, …).
+The unit-file format is the canonical **translation state** for a
+gallate project. It is a working file, not a database. See
+[§12.13 Design principle](#1213-design-principle) for the rule that
+governs every field below.
 
-### PO (`.po`)
+### 12.4.1 Container
 
-GNU gettext. One file per logical domain. Naming:
+```json
+{
+  "format": "gallate.translation",
+  "version": 1,
+  "source": "ja",
+  "target": "zh-CN",
+  "entries": []
+}
+```
+
+`entries[]` is a flat array; the container may be empty (just-extracted,
+no strings found) or carry thousands of entries. The example above
+shows the empty case; see the next subsection for a populated one.
+
+| Key | Required | Meaning |
+| --- | --- | --- |
+| `format` | yes | Literal `"gallate.translation"`. Identifies the file kind. |
+| `version` | yes | Format version. v1 is documented here. The CLI refuses to load a file whose `version` is higher than it knows. |
+| `source` | yes | BCP-47 source language tag (`ja`, `en-US`, …). |
+| `target` | yes | BCP-47 target language tag. |
+| `entries[]` | yes | Translation entries, one per extractable string. |
+
+The container itself is **language-agnostic** — neither `entries[].source` nor `entries[].target` carries a language tag. The language pair lives at the document level because every entry in the document is, by construction, a `(source, target)` pair under the same pair.
+
+### 12.4.2 Entry
+
+```json
+{
+  "id": "scenario/0083_SS_01_x.lua:L0142",
+  "source": "今日はいい天気ですね。",
+  "target": "今天天气真好呢。",
+  "state": "translated",
+
+  "source_context": {
+    "file": "scenario/0083_SS_01_x.lua",
+    "line": 142,
+    "end_line": 144,
+    "snippet": "141 │ if FLAG(\"opening\") then\n142 │     COMMAND(\"セリフ\", \"アキト\", \"…どうしたの？\")\n143 │ end"
+  },
+
+  "context": {
+    "speaker": "Alice",
+    "scene": "0083_SS_01",
+    "location": "school"
+  },
+
+  "placeholders": [
+    {"id": "player", "syntax": "{player}", "type": "variable"}
+  ],
+
+  "notes": [
+    {"text": "角色第一次登场。", "author": "translator"}
+  ],
+
+  "provenance": {"type": "human"},
+
+  "metadata": {}
+}
+```
+
+| Key | Required | Default | Kind | Meaning |
+| --- | --- | --- | --- | --- |
+| `id` | yes | — | derived | Position-derived identity. See [05-config-file.md § `id`](./05-config-file.md#id-position-derived). |
+| `source` | yes | — | derived | Source text. Re-extractable. |
+| `target` | yes | `""` | authored | Translated text. Empty before translation. The only field that is genuinely human/AI authored. |
+| `state` | yes | `"initial"` | authored | Current state label. See [05-config-file.md § `state`](./05-config-file.md#state). |
+| `source_context` | optional | sentinels | derived | Four-field record (`file` / `line` / `end_line` / `snippet`). Re-captured at extract time, preserved across inject. See [05-config-file.md § `source_context`](./05-config-file.md#source_context). |
+| `context` | optional | `{}` | authored | Free-form translator-helper data (`speaker` / `scene` / `location` / …). See [05-config-file.md § `context`](./05-config-file.md#context). |
+| `placeholders` | optional | `[]` | derived | Placeholders detected in `source`. CLI uses this to validate that `target` preserves them. See [05-config-file.md § `placeholders`](./05-config-file.md#placeholders). |
+| `notes` | optional | `[]` | authored | Translator / reviewer notes. See [05-config-file.md § `notes`](./05-config-file.md#notes). |
+| `provenance` | optional | `{"type": "human"}` | authored | Where the current `target` came from. See [05-config-file.md § `provenance`](./05-config-file.md#provenance). |
+| `metadata` | optional | `{}` | engine | Engine-defined extension namespace. See [05-config-file.md § `metadata`](./05-config-file.md#metadata). |
+
+The **Kind** column is normative:
+
+- **derived** — the CLI MUST be able to recompute the field from the
+  source resource alone. Persisting it is a cache; missing it after
+  re-extraction is not an error.
+- **authored** — a human or AI wrote it. The CLI MUST NOT recompute
+  or silently overwrite it on re-extraction.
+- **engine** — engine-defined semantics. The CLI MAY add / read it
+  under the engine's own contract; the spec does not interpret it.
+
+### 12.4.3 Multiple-file layout
+
+One file per logical domain (in the standard layouts, one per source
+resource). Naming:
 
 ```text
-text/units/<domain>.po
+text/units/<domain>.json
 ```
 
 Engine MAY group multiple domains:
 
 ```text
-text/units/main.po
-text/units/help.po
+text/units/main.json
+text/units/help.json
 ```
 
-### JSON (`.json`)
-
-Arbitrary engine-defined structure. Standard keys:
-
-```yaml
-schema:
-  units:
-    - id:        # unique string id
-      source:    # source text
-      target:    # translated text (empty pre-translation)
-      context:   # optional, engine-defined
-      meta:      # optional, freeform engine-defined metadata
-```
-
-The CLI MUST document the exact JSON shape in its engine extension
-section. The schema above is the minimum that Wrapper / OmegaT will
-reliably handle.
+The CLI MUST document any extra keys it emits in its engine
+extension section. The shape above is the minimum that Wrapper /
+OmegaT will reliably handle.
 
 ---
 
@@ -247,7 +327,7 @@ audio/
 ```
 
 Same sub-media-directory rule as `image/`. CLI MAY also emit a side
-`audio/manifest.yaml` listing duration / format / voice actor.
+`audio/manifest.json` listing duration / format / voice actor.
 
 ---
 
@@ -291,7 +371,7 @@ binary), so the CLI only emits them when the engine has explicit
 
 ## 12.9 What the standard does NOT mandate
 
-- The exact XLIFF schema inside each file (engine-defined, validated
+- The exact JSON shape inside each file (engine-defined, validated
   only by the engine).
 - Whether the CLI produces a per-resource file (preferred) or a
   single consolidated file.
@@ -316,8 +396,8 @@ Shell layer only mandates that:
 A Wrapper can introspect a project by reading:
 
 ```text
-text/manifest.yaml          # if present
-text/units/*.xlf            # or wherever the engine placed them
+text/manifest.json          # if present
+text/units/*.json           # or wherever the engine placed them
 ```
 
 The Wrapper does not need to guess. It uses the manifest when
@@ -326,7 +406,7 @@ present, falls back to glob otherwise. Engine wrappers MAY add an
 
 ```yaml
 engine:
-  manifest_path: ./text/manifest.yaml
+  manifest_path: ./text/manifest.json
 ```
 
 Standard CLI ignores this; the Wrapper uses it when present.
@@ -346,7 +426,7 @@ NOT assume any post-processing happened — it reads raw bytes.
 
 | Directory | Default mode | Sub-Media dirs? |
 | --- | --- | --- |
-| `text/`        | `text/units/*.xlf`        | n/a (units inside files) |
+| `text/`        | `text/units/*.json`       | n/a (units inside files) |
 | `image/`       | `image/<sub-media>/*`    | yes |
 | `audio/`       | `audio/<sub-media>/*`    | yes |
 | `video/`       | `video/<sub-media>/*`    | yes |
@@ -355,3 +435,56 @@ NOT assume any post-processing happened — it reads raw bytes.
 All paths resolve relative to the Project Root. CLI MUST be
 deterministic — same input, same output paths, modulo file
 timestamps.
+
+---
+
+## 12.13 Design principle
+
+Every field on `entries[]` follows one rule:
+
+> **Source is derived. Identity is derived. Translation is
+> authored. Notes are authored. Provenance is authored. Engine
+> metadata is engine-defined.**
+
+A field is **derived** if the CLI can recompute it from the source
+resource: `source`, `id`, `source_context`, `placeholders`. These
+are caches. The CLI is free to discard and re-extract them; a
+Wrapper MUST be able to regenerate them by re-running extract.
+
+A field is **authored** if a human or an AI wrote it: `target`,
+`state`, `context` (when populated by a translator), `notes`,
+`provenance`. The CLI MUST NOT silently recompute or overwrite
+authored fields on re-extraction.
+
+A field is **engine** when the engine defines its semantics
+(`metadata`, plus engine-defined extensions). The spec does not
+interpret engine fields.
+
+The consequence:
+
+```text
+source resource
+       │
+       ▼
+  Gallate CLI extract
+       │
+       ▼
+  text/units/*.json   ← derived fields recomputed; authored preserved
+       │
+       ▼
+  human / AI / editor   (mutates only authored fields)
+       │
+       ▼
+  Gallate CLI inject
+```
+
+`text/units/*.json` is **disposable**. Deleting the file and
+re-running extract loses no authored work — the CLI re-derives the
+derived fields, finds the matching source, and the next inject
+re-walks the entries. (In practice a Wrapper keeps the file
+because re-typing every `target` is expensive, but the spec does
+not depend on that.)
+
+The CLI does not need a UUID registry, a translation-memory
+database, or an `id → unit` map. The `id` is recomputable. The
+`source` is recomputable. The authored fields are git diffs.

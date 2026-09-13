@@ -20,18 +20,8 @@ Schema:[`schema/request.schema.yaml`](../../schema/request.schema.yaml)。
 
 Wrapper 在 stdin 发一条 `request`:
 
-```yaml
-type: request
-id: 01HXYZABCDEF
-operation: extract
-
-input:
-  - ./game.pfs
-
-output:
-  - ./translation
-
-options: {}
+```jsonl
+{"type":"request","id":"01HXYZABCDEF","operation":"extract","input":["./game.pfs"],"output":["./translation"],"options":{}}
 ```
 
 ### 字段
@@ -52,16 +42,10 @@ options: {}
 
 路径可为纯字符串或结构化对象:
 
-```yaml
-# 纯字符串(CLI 推断 file / directory)
-- ./game.pfs
-
-# 结构化(显式 kind)
-- path: ./game.pfs
-  kind: file
-
-- path: ./data
-  kind: directory
+```jsonl
+"./game.pfs"
+{"path":"./game.pfs","kind":"file"}
+{"path":"./data","kind":"directory"}
 ```
 
 CLI 必须能同时处理文件和目录。Wrapper 在歧义时应使用结构化形式。
@@ -79,11 +63,8 @@ CLI 必须能同时处理文件和目录。Wrapper 在歧义时应使用结构�
 
 Ignore 规则属于**操作配置**,不属于 CLI 自身。
 
-```yaml
-ignore:
-  - "**/*.tmp"
-  - "**/cache/**"
-  - system.dat
+```jsonl
+{"ignore":["**/*.tmp","**/cache/**","system.dat"]}
 ```
 
 glob 实现细节写在 CLI 文档。GCWP 不固定 glob 风味。
@@ -95,10 +76,8 @@ Wrapper **不得**静默修改 ignore 列表。见
 
 引擎专有选项放在 `options` 下,使用引擎命名空间:
 
-```yaml
-options:
-  artemis.text_encoding: shift-jis
-  artemis.rebuild_index: true
+```jsonl
+{"options":{"artemis.text_encoding":"shift-jis","artemis.rebuild_index":true}}
 ```
 
 保留命名空间:

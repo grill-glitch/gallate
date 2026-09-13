@@ -2,14 +2,14 @@
 {"type":"response","id":"01HINJECT","operation":"inject","accepted":true}
 {"type":"event","event":"started","id":"01HINJECT","operation":"inject"}
 {"type":"event","event":"phase","name":"reading"}
-{"type":"event","event":"file","action":"read","path":"translation/intro.xlf"}
-{"type":"event","event":"file","action":"read","path":"translation/day1/scene_001.xlf"}
-{"type":"event","event":"file","action":"read","path":"translation/day1/scene_002.xlf"}
+{"type":"event","event":"file","action":"read","path":"translation/intro.json"}
+{"type":"event","event":"file","action":"read","path":"translation/day1/scene_001.json"}
+{"type":"event","event":"file","action":"read","path":"translation/day1/scene_002.json"}
 {"type":"event","event":"phase","name":"validating"}
-{"type":"event","event":"validation","rule":"player-name","severity":"error","source":"Hello {player}","target":"你好","message":"Required placeholder is missing: {player}","file":"translation/day1/scene_001.xlf","line":42,"offset":12,"length":8}
-{"type":"event","event":"validation","rule":"control-code","severity":"error","source":"[FADE_IN_3]Hello","target":"你好","message":"Engine control code dropped","file":"translation/day1/scene_001.xlf","line":50}
-{"type":"event","event":"validation","rule":"max-line-length","severity":"warning","source":"...","target":"这是一段非常非常长的中文译文行超出了文本框宽度限制","message":"Target exceeds 80 characters","file":"translation/day1/scene_002.xlf","line":7}
-{"type":"event","event":"validation","rule":"max-target-bytes","severity":"error","source":"...","target":"特别长的目标字节超出","message":"Target exceeds 240 UTF-8 bytes","file":"translation/day1/scene_002.xlf","line":12}
+{"type":"event","event":"validation","rule":"player-name","severity":"error","source":"Hello {player}","target":"你好","message":"Required placeholder is missing: {player}","file":"translation/day1/scene_001.json","line":42,"offset":12,"length":8}
+{"type":"event","event":"validation","rule":"control-code","severity":"error","source":"[FADE_IN_3]Hello","target":"你好","message":"Engine control code dropped","file":"translation/day1/scene_001.json","line":50}
+{"type":"event","event":"validation","rule":"max-line-length","severity":"warning","source":"...","target":"这是一段非常非常长的中文译文行超出了文本框宽度限制","message":"Target exceeds 80 characters","file":"translation/day1/scene_002.json","line":7}
+{"type":"event","event":"validation","rule":"max-target-bytes","severity":"error","source":"...","target":"特别长的目标字节超出","message":"Target exceeds 240 UTF-8 bytes","file":"translation/day1/scene_002.json","line":12}
 {"type":"event","event":"phase","name":"writing"}
 {"type":"event","event":"file","action":"write","path":"demo-zh.pfs"}
 {"type":"event","event":"phase","name":"finalizing"}

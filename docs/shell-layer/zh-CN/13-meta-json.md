@@ -98,7 +98,7 @@ Schema: [`schema/meta.schema.yaml`](../../schema/meta.schema.yaml)。
   },
   "files": [
     {
-      "project": "text/units/scenes_intro.xlf",
+      "project": "text/units/scenes_intro.json",
       "source": "scenes/intro.bin",
       "type": "text",
       "cli": {"id": "artemis", "version": "1.2.0"},
@@ -151,7 +151,7 @@ CLI:
 例如,已知:
 
 ```text
-text/units/scenes_intro.xlf
+text/units/scenes_intro.json
 ```
 
 CLI **不得**将其视为 `scenes/intro.bin` 的可靠提示。源路径来自
@@ -176,13 +176,13 @@ project/
 ├── gallate.yaml
 ├── .meta.json
 └── text/
-    └── main.xliff
+    └── main.json
 ```
 
 下一次 `inject` 读取 `.meta.json`,配对:
 
 ```text
-text/main.xliff
+text/main.json
         │
         ▼
 game/data/script.pfs
@@ -210,7 +210,7 @@ game/data/script.pfs
 
 ```json
 {
-  "project": "new/path/main.xliff",
+  "project": "new/path/main.json",
   "source": "game/data/script.pfs"
 }
 ```
@@ -331,7 +331,7 @@ ignore: ["*.tmp"]
 // .meta.json —— 状态
 {
   "files": [
-    {"project": "translation/main.xliff", "source": "game/data/script.pfs", "type": "text"}
+    {"project": "translation/main.json", "source": "game/data/script.pfs", "type": "text"}
   ]
 }
 ```

@@ -34,12 +34,8 @@ warning: foo.dat uses unsupported format, skipping
 
 Wrapper 必须分类的错误走协议(`event: error`),带稳定 `code`:
 
-```yaml
-type: event
-event: error
-code: INVALID_INPUT
-message: Input archive is corrupted
-path: ./game.pfs
+```jsonl
+{"type":"event","event":"error","code":"INVALID_INPUT","message":"Input archive is corrupted","path":"./game.pfs"}
 ```
 
 ### 必填字段

@@ -31,21 +31,16 @@ Schema: [`schema/event.schema.yaml`](../schema/event.schema.yaml).
 
 ## started
 
-```yaml
-type: event
-event: started
-id: 01HXYZ
-operation: extract
+```jsonl
+{"type":"event","event":"started","id":"01HXYZ","operation":"extract"}
 ```
 
 ---
 
 ## phase
 
-```yaml
-type: event
-event: phase
-name: scanning
+```jsonl
+{"type":"event","event":"phase","name":"scanning"}
 ```
 
 Suggested phase names:
@@ -66,20 +61,14 @@ recommended but not mandatory.
 
 ## progress
 
-```yaml
-type: event
-event: progress
-current: 37
-total: 100
+```jsonl
+{"type":"event","event":"progress","current":37,"total":100}
 ```
 
 Indeterminate progress is allowed:
 
-```yaml
-type: event
-event: progress
-current: 37
-total: null
+```jsonl
+{"type":"event","event":"progress","current":37,"total":null}
 ```
 
 Wrapper MUST support indeterminate progress.
@@ -88,11 +77,8 @@ Wrapper MUST support indeterminate progress.
 
 ## file
 
-```yaml
-type: event
-event: file
-action: extract
-path: script/scene_037.bin
+```jsonl
+{"type":"event","event":"file","action":"extract","path":"script/scene_037.bin"}
 ```
 
 Standard actions:
@@ -115,23 +101,16 @@ delete
 
 Same shape as `file`, but engine-resource granular:
 
-```yaml
-type: event
-event: resource
-action: extract
-path: scenes/day1/scene_037/string_0042
+```jsonl
+{"type":"event","event":"resource","action":"extract","path":"scenes/day1/scene_037/string_0042"}
 ```
 
 ---
 
 ## warning
 
-```yaml
-type: event
-event: warning
-code: UNSUPPORTED_FORMAT
-message: Unsupported resource format
-path: foo.dat
+```jsonl
+{"type":"event","event":"warning","code":"UNSUPPORTED_FORMAT","message":"Unsupported resource format","path":"foo.dat"}
 ```
 
 `warning` MUST NOT cause a non-zero exit code unless the CLI
@@ -141,12 +120,8 @@ explicitly promotes it. See [09-diagnostics.md](./09-diagnostics.md).
 
 ## error
 
-```yaml
-type: event
-event: error
-code: INVALID_INPUT
-message: Input archive is corrupted
-path: ./game.pfs
+```jsonl
+{"type":"event","event":"error","code":"INVALID_INPUT","message":"Input archive is corrupted","path":"./game.pfs"}
 ```
 
 `error.code` is the **stable** identifier Wrapper MUST use to classify
@@ -157,21 +132,23 @@ errors. `message` MAY change between versions. See
 
 ## validation
 
-```yaml
-type: event
-event: validation
-rule: placeholder
-severity: error
+```json
+{
+  "type": "event",
+  "event": "validation",
+  "rule": "placeholder",
+  "severity": "error",
 
-source: Hello {player}
-target: 你好
+  "source": "Hello {player}",
+  "target": "你好",
 
-message: Required placeholder is missing: {player}
+  "message": "Required placeholder is missing: {player}",
 
-file: script/scene_037.bin
-line: 42
-offset: 12
-length: 8
+  "file": "script/scene_037.bin",
+  "line": 42,
+  "offset": 12,
+  "length": 8
+}
 ```
 
 See [08-validation.md](./08-validation.md).
@@ -180,15 +157,8 @@ See [08-validation.md](./08-validation.md).
 
 ## statistics
 
-```yaml
-type: event
-event: statistics
-
-statistics:
-  files:
-    processed: 317
-  text:
-    extracted: 8421
+```jsonl
+{"type":"event","event":"statistics","statistics":{"files":{"processed":317},"text":{"extracted":8421}}}
 ```
 
 The `statistics` event usually carries the final snapshot. See
@@ -198,13 +168,8 @@ The `statistics` event usually carries the final snapshot. See
 
 ## completed
 
-```yaml
-type: event
-event: completed
-
-statistics:
-  files:
-    processed: 317
+```jsonl
+{"type":"event","event":"completed","statistics":{"files":{"processed":317}}}
 ```
 
 `completed` means the operation ended successfully. CLI MUST emit this
@@ -214,9 +179,8 @@ event before exit 0. The CLI process MUST then exit.
 
 ## cancelled
 
-```yaml
-type: event
-event: cancelled
+```jsonl
+{"type":"event","event":"cancelled"}
 ```
 
 CLI MUST emit `cancelled` after receiving a `cancel` command (see

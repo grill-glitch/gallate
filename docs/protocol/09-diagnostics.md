@@ -46,12 +46,8 @@ Their format is engine-specific and may change without notice.
 Errors that the Wrapper must classify MUST go through the protocol
 (`event: error`) with a stable `code`:
 
-```yaml
-type: event
-event: error
-code: INVALID_INPUT
-message: Input archive is corrupted
-path: ./game.pfs
+```jsonl
+{"type":"event","event":"error","code":"INVALID_INPUT","message":"Input archive is corrupted","path":"./game.pfs"}
 ```
 
 ### Required fields

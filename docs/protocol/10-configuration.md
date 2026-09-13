@@ -84,11 +84,15 @@ input: ./game.pfs
 
 becomes
 
-```yaml
-# GCWP request
-input:
-  - path: ./game.pfs       # still relative
-    kind: file
+```json
+{
+  "input": [
+    {
+      "path": "./game.pfs",
+      "kind": "file"
+    }
+  ]
+}
 ```
 
 The CLI is responsible for resolving the path itself, but using the same

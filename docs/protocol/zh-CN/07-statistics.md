@@ -10,39 +10,8 @@ Schema:[`schema/statistics.schema.yaml`](../../schema/statistics.schema.yaml)。
 
 示例:
 
-```yaml
-type: statistics
-
-files:
-  scanned: 1524
-  matched: 318
-  processed: 317
-  skipped: 1
-  failed: 0
-
-text:
-  extracted: 8421
-  injected: 0
-
-images:
-  extracted: 326
-  injected: 0
-
-audio:
-  extracted: 0
-  injected: 0
-
-video:
-  extracted: 0
-  injected: 0
-
-output:
-  created: 643
-  modified: 0
-  bytesRead: 48392012
-  bytesWritten: 7219382
-
-duration: 12.84
+```jsonl
+{"type":"statistics","files":{"scanned":1524,"matched":318,"processed":317,"skipped":1,"failed":0},"text":{"extracted":8421,"injected":0},"images":{"extracted":326,"injected":0},"audio":{"extracted":0,"injected":0},"video":{"extracted":0,"injected":0},"output":{"created":643,"modified":0,"bytesRead":48392012,"bytesWritten":7219382},"duration":12.84}
 ```
 
 ## 字段
@@ -79,10 +48,8 @@ CLI 可添加自定义顶层键。Wrapper 必须按 [12-兼容性.md](./12-compa
 
 CLI 可在自定义命名空间下加引擎专有统计:
 
-```yaml
-artemis:
-  controls_decoded: 4218
-  fonts_resolved: 14
+```jsonl
+{"artemis":{"controls_decoded":4218,"fonts_resolved":14}}
 ```
 
 Wrapper 必须先被告知含义才能显示/使用。展示需要 per-engine UI 插件。

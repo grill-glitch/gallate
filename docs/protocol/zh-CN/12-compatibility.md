@@ -38,12 +38,8 @@ Wrapper  MAY 拒绝不支持 MAJOR 的 CLI。
 
 接收方必须忽略未知字段。例:
 
-```yaml
-# CLI 发(新版本,加了 speed)
-{type: event, event: progress, current: 50, total: 100, speed: 123.4}
-
-# 老 Wrapper 读这条消息
-# 不认 `speed` → 必须忽略并继续
+```jsonl
+{"type":"event","event":"progress","current":50,"total":100,"speed":123.4}
 ```
 
 模式:**未知字段必须忽略。**

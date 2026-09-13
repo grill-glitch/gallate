@@ -48,12 +48,8 @@ does not understand.
 
 Receivers MUST ignore unknown fields. Example:
 
-```yaml
-# CLI emits (new version, added speed field)
-{type: event, event: progress, current: 50, total: 100, speed: 123.4}
-
-# Old Wrapper reads the message
-# It does not know `speed` → MUST ignore it and proceed.
+```jsonl
+{"type":"event","event":"progress","current":50,"total":100,"speed":123.4}
 ```
 
 The pattern: **Unknown fields MUST be ignored.**

@@ -72,11 +72,15 @@ input: ./game.pfs
 
 变成
 
-```yaml
-# GCWP request
-input:
-  - path: ./game.pfs       # 仍相对
-    kind: file
+```json
+{
+  "input": [
+    {
+      "path": "./game.pfs",
+      "kind": "file"
+    }
+  ]
+}
 ```
 
 CLI 仍需自行解析路径,但沿用同一约定。这避免 CLI 耦合到特定调用目录。

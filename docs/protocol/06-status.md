@@ -27,7 +27,7 @@ CLI MUST support a status interface if `features.runtime.status` is true.
 Interface:
 
 ```bash
-cli status --yaml
+cli status
 ```
 
 If the CLI is currently running an operation, this returns a snapshot
@@ -41,22 +41,25 @@ Schema: [`schema/status.schema.yaml`](../schema/status.schema.yaml).
 
 Example:
 
-```yaml
-type: status
-state: running
+```json
+{
+  "type": "status",
+  "state": "running",
 
-operation: extract
+  "operation": "extract",
+  "phase": "extracting",
 
-phase: extracting
+  "progress": {
+    "current": 72,
+    "total": 100
+  },
 
-progress:
-  current: 72
-  total: 100
+  "current": {
+    "path": "script/scene_072.bin"
+  },
 
-current:
-  path: script/scene_072.bin
-
-started_at: 2026-09-09T12:34:56Z
+  "started_at": "2026-09-09T12:34:56Z"
+}
 ```
 
 ### Fields
@@ -81,7 +84,7 @@ Status is **not** an event in the operation stream. It is a
 Wrapper                          CLI
    │                              │
    │  ── status.jsonl ───▶  │   (a single line, one JSON object)
-   │                              │   OR alternatively a `cli status --yaml`
+   │                              │   OR alternatively a `cli status`
    │  ◀── single status doc ───  │   invocation on a dedicated pipe
    │                              │
 ```
@@ -91,12 +94,12 @@ mix them in the same CLI session:
 
 ### A. Inline status stream
 
-```yaml
+```jsonl
 # Wrapper → CLI over stdin (any point during running)
-{type: status-query, id: 01HSTATUS}
+{"type":"status-query","id":"01HSTATUS"}
 
 # CLI → Wrapper over stdout (single line, then back to events)
-{type: status, state: running, operation: extract, phase: extracting, progress: {current: 72, total: 100}}
+{"type":"status","state":"running","operation":"extract","phase":"extracting","progress":{"current":72,"total":100}}
 ```
 
 The CLI returns **exactly one** status document in response, then
@@ -107,7 +110,7 @@ resumes the normal event stream.
 ```bash
 # Wrapper spawns a separate CLI process (or reuses the existing one
 # with a side-band fd) and asks:
-$ cli status --yaml
+$ cli status
 ```
 
 This avoids polluting the operation's stdin/stdout with status
@@ -129,9 +132,8 @@ protocol violation by the CLI.
 
 Schema: [`schema/status-query.schema.yaml`](../schema/status-query.schema.yaml).
 
-```yaml
-type: status-query
-id: 01HSTATUS
+```jsonl
+{"type":"status-query","id":"01HSTATUS"}
 ```
 
 The Wrapper MUST include a query id, and the CLI MUST echo the same id

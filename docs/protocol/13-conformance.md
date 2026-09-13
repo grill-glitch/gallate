@@ -37,10 +37,15 @@ Full       Standard + cancellation + status streaming + diagnostics
 
 ### Features that MUST be true
 
-```yaml
-operations:
-  extract: true   # or any one standard/engine-extension operation
+```json
+{
+  "operations": {
+    "extract": true
+  }
+}
 ```
+
+(Or any one standard / engine-extension operation.)
 
 ### Optional at this tier
 
@@ -55,9 +60,9 @@ operations:
 [`examples/minimal-cli/`](../../examples/minimal-cli/) implements Basic.
 
 ```bash
-$ minimal-cli manifest --yaml
-$ minimal-cli features --yaml
-$ minimal-cli extract ./game.pfs --yaml
+$ minimal-cli manifest
+$ minimal-cli features
+$ minimal-cli extract ./game.pfs
 ```
 
 ---
@@ -70,18 +75,24 @@ $ minimal-cli extract ./game.pfs --yaml
 - Event streaming for at least: `started`, `progress`, `file`, `completed`
 - Statistics emission (in the `completed` event or as a separate
   `statistics` event)
-- Validation rules via `cli validation --yaml` for at least one of
+- Validation rules via `cli validation` for at least one of
   `regex` / `placeholder` / `constraint`
 
 ### Features that MUST be true
 
-```yaml
-runtime:
-  events: true
-  statistics: true
-validation:
-  regex: true       # at least one of regex / placeholder / constraint
+```json
+{
+  "runtime": {
+    "events":     true,
+    "statistics": true
+  },
+  "validation": {
+    "regex": true
+  }
+}
 ```
+
+(At least one of `regex` / `placeholder` / `constraint`.)
 
 ### Optional at this tier
 
@@ -102,23 +113,27 @@ CLI without inspecting its `id`.
 
 - Everything in Standard
 - Cancellation via `cancel` command
-- Status query via `cli status --yaml`
+- Status query via `cli status`
 - All validation rule types
 - Standard error codes (or engine equivalents documented)
 - Diagnostic stream on stderr (human-readable progress, warnings)
 
 ### Features that MUST be true
 
-```yaml
-runtime:
-  events: true
-  status: true
-  statistics: true
-  cancellation: true
-validation:
-  regex: true
-  placeholder: true
-  constraint: true
+```json
+{
+  "runtime": {
+    "events":       true,
+    "status":       true,
+    "statistics":   true,
+    "cancellation": true
+  },
+  "validation": {
+    "regex":       true,
+    "placeholder": true,
+    "constraint":  true
+  }
+}
 ```
 
 ### Wrapper assumption

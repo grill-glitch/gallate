@@ -30,10 +30,15 @@ Full       Standard + cancellation + status 流式 + diagnostics
 
 ### features 必须为 true
 
-```yaml
-operations:
-  extract: true   # 或任意一个标准 / 引擎扩展操作
+```json
+{
+  "operations": {
+    "extract": true
+  }
+}
 ```
+
+(或任意一个标准 / 引擎扩展操作。)
 
 ### 本层可选
 
@@ -48,9 +53,9 @@ operations:
 [`examples/minimal-cli/`](../../examples/minimal-cli/) 实现 Basic。
 
 ```bash
-$ minimal-cli manifest --yaml
-$ minimal-cli features --yaml
-$ minimal-cli extract ./game.pfs --yaml
+$ minimal-cli manifest
+$ minimal-cli features
+$ minimal-cli extract ./game.pfs
 ```
 
 ## Standard
@@ -60,17 +65,23 @@ $ minimal-cli extract ./game.pfs --yaml
 - Basic 全部
 - 至少发 `started` / `progress` / `file` / `completed` 事件流
 - Statistics 输出(`completed` event 携带,或单独 `statistics` event)
-- 至少一种 validation 规则(regex / placeholder / constraint 之一),通过 `cli validation --yaml`
+- 至少一种 validation 规则(regex / placeholder / constraint 之一),通过 `cli validation`
 
 ### features 必须为 true
 
-```yaml
-runtime:
-  events: true
-  statistics: true
-validation:
-  regex: true       # regex / placeholder / constraint 至少一个
+```json
+{
+  "runtime": {
+    "events":     true,
+    "statistics": true
+  },
+  "validation": {
+    "regex": true
+  }
+}
 ```
+
+(regex / placeholder / constraint 至少一个。)
 
 ### 本层可选
 
@@ -88,23 +99,27 @@ validation:
 
 - Standard 全部
 - 通过 `cancel` 命令支持取消
-- 通过 `cli status --yaml` 支持状态查询
+- 通过 `cli status` 支持状态查询
 - 全部 validation rule 类型
 - 标准 error code(或文档中说明的引擎等价物)
 - stderr 诊断流(人类可读进度、警告)
 
 ### features 必须为 true
 
-```yaml
-runtime:
-  events: true
-  status: true
-  statistics: true
-  cancellation: true
-validation:
-  regex: true
-  placeholder: true
-  constraint: true
+```json
+{
+  "runtime": {
+    "events":       true,
+    "status":       true,
+    "statistics":   true,
+    "cancellation": true
+  },
+  "validation": {
+    "regex":       true,
+    "placeholder": true,
+    "constraint":  true
+  }
+}
 ```
 
 ### Wrapper 假设

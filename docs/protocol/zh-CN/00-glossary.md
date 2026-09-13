@@ -84,9 +84,10 @@ CLI 进程结束时返回的整数。标准定义见 [02-核心协议.md § 退�
 
 ## H
 
-### 人类模式(Human Mode)
+### 帮助输出(Help Output)
 
-不带 `--yaml` 调 CLI,自由格式输出面向终端用户。
+不带参数或带 `--help` 调 CLI 时打印的自由格式人可读文本。
+帮助输出**不是**线缆协议的一部分;Wrapper **不得**解析。
 
 ## I
 
@@ -106,6 +107,15 @@ Wrapper 给每次操作请求分配的 ULID/UUID,用于关联事件、状态快�
 
 `total: null` 的进度报告。见 [05-事件流.md § progress](./05-events.md)。
 
+## J
+
+### JSON 单元文件
+
+OmegaT 产生/消费的标准单元文件格式 —— 每个逻辑翻译域一个 JSON 文档,内含
+扁平的 `units` 数组。GCWP 不直接接触单元文件;Wrapper 在 GCWP 操作与 Shell 层
+([12-file-structure.md](../shell-layer/12-file-structure.md))描述的 JSON
+单元文档之间做映射。
+
 ## L
 
 ### JSON Line Protocol
@@ -118,13 +128,9 @@ YAML **不**属于 GCWP 线缆,YAML 留给 Shell 层(人类面对的 CLI 调用�
 
 ## M
 
-### 机器模式(Machine Mode)
-
-带 `--yaml` 调 CLI,稳定机器可读输出。Wrapper 必须使用此模式。
-
 ### Manifest
 
-CLI 身份文档,由 `cli manifest --yaml` 返回。
+CLI 身份文档,由 `cli manifest` 返回。
 
 ## O
 
@@ -224,28 +230,20 @@ CLI 向 OmegaT 暴露的具名规则,用于对翻译文本做验证。
 
 OmegaT 的唯一集成点。拥有 GCWP client、项目配置加载、事件/状态聚合、OmegaT glue。**不得**包含引擎逻辑。
 
-## X
-
-### XLIFF
-
-OmegaT 产生/消费的标准双语交换格式。GCWP 不直接接触 XLIFF —— Wrapper 在 GCWP 操作与 XLIFF 之间做映射。
-
 ## Y
 
 ### YAML vs JSON
 
-GCWP 故意按层级边界把两种格式分开:
+GCWP 按角色只取一种格式:
 
-- **Wrapper ↔ CLI** (stdin / stdout) — **JSON**。每行一个 JSON 对象。
-  机器到机器,人从不读。
-- **用户 ↔ CLI** (Shell 层) — **YAML**。`--yaml` flag 与
-  `gallate.yaml` 项目文件。人可读。
+| 角色 | 格式 | 原因 |
+| --- | --- | --- |
+| 项目配置(`gallate.yaml`) | YAML | 由人编辑;注释与多行字符串重要。 |
+| 线缆协议(stdin / stdout) | 流式用 JSON Line Protocol,一次性发现用 JSON | 机器到机器;人从不读。 |
+| 发现输出的参考快照(如 `examples/full-cli/manifest.json`) | JSON | 单个文档;schema 是真相之源。 |
+| 项目状态(`.meta.json`) | JSON | 机器派生;schema 是真相之源。 |
+| 翻译状态(`text/units/*.json`,格式 `gallate.translation`) | JSON | 人编辑的字段装在 JSON 容器内,数据形状仍可被机器校验。 |
 
-理由:JSON 是程序间通信的通用语;YAML 更适合人编辑的文件。两者混用
-会让 JSON 漏进用户面(坏 UX),或 YAML 上线缆(机器解析成本高)。本规范
-各取所长。
-
-### YAML Line Protocol
-
-**已弃用。** 早期草案使用 YAML Line Protocol;1.0 之前切换为
-JSON Line Protocol。CLI 实现**不得**再发 YAML 形式。
+YAML 只出现在 `gallate.yaml`(项目配置文件,人可编辑)中。**没有** `--yaml`
+flag;CLI 发现命令(`cli manifest`、`cli features`、`cli validation`、
+`cli identify <path>`、`cli status`)在 stdout 输出 JSON。

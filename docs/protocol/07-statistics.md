@@ -14,39 +14,8 @@ Schema: [`schema/statistics.schema.yaml`](../schema/statistics.schema.yaml).
 
 Example:
 
-```yaml
-type: statistics
-
-files:
-  scanned: 1524
-  matched: 318
-  processed: 317
-  skipped: 1
-  failed: 0
-
-text:
-  extracted: 8421
-  injected: 0
-
-images:
-  extracted: 326
-  injected: 0
-
-audio:
-  extracted: 0
-  injected: 0
-
-video:
-  extracted: 0
-  injected: 0
-
-output:
-  created: 643
-  modified: 0
-  bytesRead: 48392012
-  bytesWritten: 7219382
-
-duration: 12.84
+```jsonl
+{"type":"statistics","files":{"scanned":1524,"matched":318,"processed":317,"skipped":1,"failed":0},"text":{"extracted":8421,"injected":0},"images":{"extracted":326,"injected":0},"audio":{"extracted":0,"injected":0},"video":{"extracted":0,"injected":0},"output":{"created":643,"modified":0,"bytesRead":48392012,"bytesWritten":7219382},"duration":12.84}
 ```
 
 ---
@@ -90,10 +59,8 @@ CLI MAY add custom top-level keys. Wrapper MUST ignore unknown keys per
 
 CLI MAY add engine-specific statistics under a custom namespace:
 
-```yaml
-artemis:
-  controls_decoded: 4218
-  fonts_resolved: 14
+```jsonl
+{"artemis":{"controls_decoded":4218,"fonts_resolved":14}}
 ```
 
 The Wrapper MUST NOT display or use these without first being taught what
