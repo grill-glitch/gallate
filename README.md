@@ -170,13 +170,13 @@ gallate/
 ├── examples/                    # GCWP IPC traces
 │   ├── README.md
 │   ├── minimal-cli/
-│   │   ├── manifest.yaml
-│   │   ├── features.yaml
+│   │   ├── manifest.json
+│   │   ├── features.json
 │   │   └── extract.jsonl
 │   └── full-cli/
-│       ├── manifest.yaml
-│       ├── features.yaml
-│       ├── validation.yaml
+│       ├── manifest.json
+│       ├── features.json
+│       ├── validation.json
 │       ├── validation-result.jsonl
 │       ├── extract.jsonl
 │       ├── inject.jsonl
@@ -234,8 +234,8 @@ exit codes
 Concretely:
 
 ```bash
-$ cli manifest --yaml
-$ cli features --yaml
+$ cli manifest
+$ cli features
 $ cli extract ./game.pfs --yaml
 ```
 
@@ -275,6 +275,43 @@ Reference implementations may choose any license, but the GCWP wire
 format defined under `schema/` and the Shell-layer grammar defined
 under `docs/shell-layer/` must remain stable per the compatibility
 rules in [`docs/protocol/12-compatibility.md`](./docs/protocol/12-compatibility.md).
+
+---
+
+## Reference implementations
+
+A CLI that conforms to this specification exists as a standalone
+repository. It's not part of the spec itself — implementations live
+on their own cadence and ship independently.
+
+| Engine   | CLI id       | Conformance       | Repository                                                                 |
+| -------- | ------------ | ----------------- | --------------------------------------------------------------------------- |
+| Ren'Py 7 | `sirenhead`  | GCWP 1.0 Standard  | [`grill-glitch/gallate-renpy`](https://github.com/grill-glitch/gallate-renpy) |
+
+The Ren'Py CLI ships both layers of the spec:
+
+- **Shell layer** — `tool -et ./gallate.yaml` to extract, `-it` to
+  inject. Standard flags (`--output`, `--ignore`, `--dry-run`,
+  `--engine.KEY=VALUE`).
+- **Protocol layer (GCWP)** — same binary driven via JSON Lines on
+  stdin/stdout. Implements `manifest`, `features`, `validation`,
+  `identify`, `extract`, `inject` operations, event streaming,
+  statistics, and validation rules.
+
+Notable behaviors verified end-to-end on a real Ren'Py game:
+
+- Byte-identical round-trip on text and image/audio/video assets.
+- Source-drift detection (exit 8, atomicity preserved).
+- Minimal-diff text inject (N edits → exactly N changed lines).
+- Sub-media classification (`image` → `background` / `portrait` /
+  `cg` / `ui`; `audio` → `voice` / `bgm` / `sfx`; `video` →
+  `cutscene` / `opening` / `ending`) driven by `script.rpy` ref
+  scan + filename hints + folder conventions, overridable via
+  `gallate.yaml`'s `engine.<media>.{includes,excludes}`.
+
+This list is **not exhaustive** — the Wrapper discovers CLIs via
+`manifest.targets` and the GCWP handshake, so any engine CLI that
+speaks the protocol joins the ecosystem automatically.
 
 ---
 

@@ -156,13 +156,13 @@ gallate/
 ├── examples/                    # GCWP IPC trace
 │   ├── README.md
 │   ├── minimal-cli/
-│   │   ├── manifest.yaml
-│   │   ├── features.yaml
+│   │   ├── manifest.json
+│   │   ├── features.json
 │   │   └── extract.jsonl
 │   └── full-cli/
-│       ├── manifest.yaml
-│       ├── features.yaml
-│       ├── validation.yaml
+│       ├── manifest.json
+│       ├── features.json
+│       ├── validation.json
 │       ├── validation-result.jsonl
 │       ├── extract.jsonl
 │       ├── inject.jsonl
@@ -220,8 +220,8 @@ exit codes
 具体而言:
 
 ```bash
-$ cli manifest --yaml
-$ cli features --yaml
+$ cli manifest
+$ cli features
 $ cli extract ./game.pfs --yaml
 ```
 
@@ -257,6 +257,39 @@ Shell 层(项目布局、CLI 语法、`gallate.yaml`)是 [`docs/shell-layer/`](.
 `docs/shell-layer/` 下定义的 Shell层语法必须按
 [`docs/protocol/12-compatibility.md`](./docs/protocol/12-compatibility.md)
 的兼容性规则保持稳定。
+
+---
+
+## 参考实现
+
+已有一个 CLI 实现作为独立仓库存在。它不属于规范本身——实现
+按各自节奏独立发布。
+
+| 引擎     | CLI id       | 符合性            | 仓库                                                                    |
+| -------- | ------------ | ----------------- | ----------------------------------------------------------------------- |
+| Ren'Py 7 | `sirenhead`  | GCWP 1.0 Standard  | [`grill-glitch/gallate-renpy`](https://github.com/grill-glitch/gallate-renpy) |
+
+该 Ren'Py CLI 同时实现规范的两层：
+
+- **Shell 层**——`tool -et ./gallate.yaml` 抽取，`-it` 回填。标准
+  flag（`--output`、`--ignore`、`--dry-run`、`--engine.KEY=VALUE`）。
+- **协议层（GCWP）**——同一个二进制由 stdin/stdout 上的 JSON Lines
+  驱动。实现了 `manifest`、`features`、`validation`、`identify`、
+  `extract`、`inject` 操作，以及事件流、统计、校验规则。
+
+已在真实 Ren'Py 游戏上端到端验证的关键行为：
+
+- text 与 image/audio/video 资源的字节级回环稳定。
+- 源漂移检测（exit 8，原子性保留）。
+- text 最小 diff 回填（N 条编辑 → 恰好 N 行改动）。
+- 子媒体分类（`image` → `background` / `portrait` / `cg` / `ui`；
+  `audio` → `voice` / `bgm` / `sfx`；`video` → `cutscene` /
+  `opening` / `ending`）由 `script.rpy` 引用扫描 + 文件名提示 +
+  文件夹约定驱动，可通过 `gallate.yaml` 的
+  `engine.<media>.{includes,excludes}` 覆盖。
+
+此清单**并非穷举**——Wrapper 通过 `manifest.targets` 与 GCWP 握
+手发现 CLI，因此任何讲协议的引擎 CLI 都自动接入生态。
 
 ---
 
